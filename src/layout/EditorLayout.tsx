@@ -1,0 +1,100 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Layout } from 'antd';
+import styled from 'styled-components';
+import { LeftPalette } from './LeftPalette';
+import { TopBar } from './TopBar';
+import { GridCanvas } from '../canvas/GridCanvas';
+import { RightInspector } from './RightInspector';
+import { useCallback, useState } from 'react';
+import type { Edge, Node } from 'reactflow';
+
+const { Header, Sider, Content, 
+} = Layout;
+
+const StyledLayout = styled(Layout)`
+  min-height: 100vh;
+  background: #0f1115;
+  color: #e6e9f0;
+`;
+
+const PanelWrapper = styled.div`
+  height: calc(100vh - 80px);
+  padding: 8px;
+`;
+
+type EditorLayoutProps = {
+  onNew?: () => void;
+  onSave?: () => void;
+  onExport?: () => void;
+  onImport?: () => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  onValidate?: () => void;
+  onRun?: (payload: { nodes: Node[]; edges: Edge[] }) => void;
+  onFit?: () => void;
+};
+
+export const EditorLayout = (props: EditorLayoutProps) => {
+  const [selection, setSelection] = useState<{ kind: 'node'; id: string } | { kind: 'edge'; id: string }>();
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
+
+  const selectedNode = selection?.kind === 'node' ? nodes.find((n) => n.id === selection.id) : undefined;
+  const selectedEdge = selection?.kind === 'edge' ? edges.find((e) => e.id === selection.id) : undefined;
+
+  const updateSelection = useCallback((next?: { kind: 'node'; id: string } | { kind: 'edge'; id: string }) => {
+    setSelection(next);
+  }, []);
+
+  const updateNodes = useCallback((next: Node[]) => {
+    setNodes(next);
+  }, []);
+
+  const updateEdges = useCallback((next: Edge[]) => {
+    setEdges(next);
+  }, []);
+
+  return (
+    <StyledLayout>
+      <Header style={{ padding: 0, background: '#0f1115' }}>
+        <TopBar
+          {...props}
+          onRun={
+            props.onRun
+              ? () => {
+                  props.onRun?.({ nodes, edges });
+                }
+              : undefined
+          }
+        />
+      </Header>
+      <Layout>
+        <Sider width={200} style={{ background: '#fff', borderRight: '1px solid #1f2937', padding: '8px' }}>
+          <LeftPalette />
+        </Sider>
+        <Content style={{ background: '#0f1115', padding: '8px' }}>
+          <PanelWrapper>
+            <GridCanvas 
+              nodes={nodes}
+              edges={edges}
+              onUpdateNodes={updateNodes}
+              onUpdateEdges={updateEdges}
+              onSelect={updateSelection}
+            />
+          </PanelWrapper>
+        </Content>
+        <Sider width={300} style={{ background: '#0f1115', borderLeft: '1px solid #1f2937', padding: '8px' }}>
+          <RightInspector
+            selectionNode={selectedNode}
+            selectionEdge={selectedEdge}
+            nodes={nodes}
+            edges={edges}
+            onUpdateNodes={updateNodes}
+            onUpdateEdges={updateEdges}
+          />
+        </Sider>
+      </Layout>
+    </StyledLayout>
+  );
+};
+
