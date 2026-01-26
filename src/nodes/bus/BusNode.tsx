@@ -5,7 +5,7 @@ import type { BusData } from './types';
 
 const Wrapper = styled.div`
   min-width: 80px;
-  padding: 8px 10px;
+  padding: 6px 10px;
   background: #111827;
   border: 1px solid #374151;
   border-radius: 10px;
@@ -20,7 +20,7 @@ const Title = styled.div`
 `;
 
 const Subtitle = styled.div`
-  margin-top: 4px;
+  margin-top: 2px;
   font-size: 8px;
   color: #9ca3af;
 `;
@@ -32,16 +32,10 @@ type BusNodeProps = {
 export const BusNode = ({ data }: BusNodeProps) => {
   return (
     <Wrapper>
-      <Handle id="t1" type="target" position={Position.Left} style={{ top: '20%', background: '#60a5fa', border: 0 }} />
-      <Handle id="t2" type="target" position={Position.Left} style={{ top: '50%', background: '#60a5fa', border: 0 }} />
-      <Handle id="t3" type="target" position={Position.Left} style={{ top: '80%', background: '#60a5fa', border: 0 }} />
-
-      <Handle id="s1" type="source" position={Position.Right} style={{ top: '20%', background: '#34d399', border: 0 }} />
-      <Handle id="s2" type="source" position={Position.Right} style={{ top: '50%', background: '#34d399', border: 0 }} />
-      <Handle id="s3" type="source" position={Position.Right} style={{ top: '80%', background: '#34d399', border: 0 }} />
-
+      <Handle id="target" type="target" position={Position.Top} style={{ background: '#60a5fa', border: 0 }} />
       <Title>{data?.name || 'Bus'}</Title>
       <Subtitle>{data?.vn_kv ?? ''} kV</Subtitle>
+      <Handle id="source" type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
     </Wrapper>
   );
 };

@@ -4,8 +4,8 @@ import styled from 'styled-components';
 import type { ShuntData } from './types';
 
 const Wrapper = styled.div`
-  min-width: 150px;
-  padding: 10px 12px;
+  min-width: 100px;
+  padding: 8px 10px;
   background: #111827;
   border: 1px solid #06b6d4;
   border-radius: 10px;
@@ -14,14 +14,14 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled.div`
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 600;
   line-height: 1.2;
 `;
 
 const Subtitle = styled.div`
-  margin-top: 4px;
-  font-size: 11px;
+  margin-top: 2px;
+  font-size: 8px;
   color: #9ca3af;
 `;
 
