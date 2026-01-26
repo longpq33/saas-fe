@@ -13,12 +13,12 @@ const { Header, Sider, Content,
 
 const StyledLayout = styled(Layout)`
   min-height: 100vh;
-  background: #0f1115;
+  background: #fff;
   color: #e6e9f0;
 `;
 
 const PanelWrapper = styled.div`
-  height: calc(100vh - 80px);
+  height: calc(100vh - 70px);
   padding: 8px;
 `;
 
@@ -69,7 +69,7 @@ export const EditorLayout = (props: EditorLayoutProps) => {
         />
       </Header>
       <Layout>
-        <Sider width={200} style={{ background: '#fff', borderRight: '1px solid #1f2937', padding: '8px' }}>
+        <Sider width={200} style={{ background: '#fff', borderRight: '1px solid #1f2937', padding: '8px', overflow: 'hidden', height: 'calc(100vh - 60px)' }}>
           <LeftPalette />
         </Sider>
         <Content style={{ background: '#0f1115', padding: '8px' }}>
@@ -83,7 +83,7 @@ export const EditorLayout = (props: EditorLayoutProps) => {
             />
           </PanelWrapper>
         </Content>
-        <Sider width={300} style={{ background: '#0f1115', borderLeft: '1px solid #1f2937', padding: '8px' }}>
+        <Sider width={300} style={{ background: '#0f1115', borderLeft: '1px solid #1f2937', padding: '8px', height: 'calc(100vh - 60px)' }}>
           <RightInspector
             selectionNode={selectedNode}
             selectionEdge={selectedEdge}

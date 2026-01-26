@@ -32,13 +32,9 @@ type ShuntNodeProps = {
 export const ShuntNode = ({ data }: ShuntNodeProps) => {
   return (
     <Wrapper>
-      <Handle id="t1" type="target" position={Position.Left} style={{ top: '20%', background: '#60a5fa', border: 0 }} />
-      <Handle id="t2" type="target" position={Position.Left} style={{ top: '50%', background: '#60a5fa', border: 0 }} />
-      <Handle id="t3" type="target" position={Position.Left} style={{ top: '80%', background: '#60a5fa', border: 0 }} />
+      <Handle id="target" type="target" position={Position.Top} style={{ background: '#60a5fa', border: 0 }} />
 
-      <Handle id="s1" type="source" position={Position.Right} style={{ top: '20%', background: '#34d399', border: 0 }} />
-      <Handle id="s2" type="source" position={Position.Right} style={{ top: '50%', background: '#34d399', border: 0 }} />
-      <Handle id="s3" type="source" position={Position.Right} style={{ top: '80%', background: '#34d399', border: 0 }} />
+      <Handle id="source" type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
 
       <Title>{data?.name || 'Shunt'}</Title>
       <Subtitle>

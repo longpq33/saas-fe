@@ -93,7 +93,7 @@ export const RightInspector = ({
                 );
               }
 
-              if (!selectionNode) return <Empty description="Chọn một phần tử" />;
+              if (!selectionNode) return <Empty description="Choice an element" />;
 
               const updateNode = (next: unknown) => {
                 onUpdateNodes(nodes.map((n) => (n.id === selectionNode.id ? { ...n, data: next } : n)));
@@ -189,7 +189,7 @@ export const RightInspector = ({
                     />
                   );
                 default:
-                  return <Empty description="Chưa có form cho loại này" />;
+                  return <Empty description="Not found this type" />;
               }
             })(),
           },

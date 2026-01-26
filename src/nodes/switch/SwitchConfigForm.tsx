@@ -1,6 +1,6 @@
 import { Button, Form, Input, InputNumber, Select, Switch } from 'antd';
 
-import type { SwitchData, SwitchElementType, SwitchType } from './types';
+import type { SwitchData } from './types';
 
 type SwitchConfigFormProps = {
   value: SwitchData;

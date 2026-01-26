@@ -61,11 +61,11 @@ export const TopBar = ({
         </Tooltip> */}
       </Space>
       <Space>
-        <Tooltip title="Validate lưới">
+        {/* <Tooltip title="Validate lưới">
           <Button size="small" icon={<CheckCircleOutlined />} onClick={onValidate}>
             Validate
           </Button>
-        </Tooltip>
+        </Tooltip> */}
         <Tooltip title="Chạy mô phỏng">
           <Button type="primary" size="small" icon={<PlayCircleOutlined />} onClick={onRun}>
             Run
