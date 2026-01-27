@@ -23,6 +23,9 @@ const PanelWrapper = styled.div`
 `;
 
 type EditorLayoutProps = {
+  initialNodes?: Node[];
+  initialEdges?: Edge[];
+  resetKey?: number;
   onNew?: () => void;
   onSave?: () => void;
   onExport?: () => void;
@@ -35,9 +38,17 @@ type EditorLayoutProps = {
 };
 
 export const EditorLayout = (props: EditorLayoutProps) => {
+  const { initialNodes = [], initialEdges = [] } = props;
   const [selection, setSelection] = useState<{ kind: 'node'; id: string } | { kind: 'edge'; id: string }>();
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
+  const [nodes, setNodes] = useState<Node[]>(initialNodes);
+  const [edges, setEdges] = useState<Edge[]>(initialEdges);
+
+  const handleNew = useCallback(() => {
+    setSelection(undefined);
+    setNodes([]);
+    setEdges([]);
+    props.onNew?.();
+  }, [props]);
 
   const selectedNode = selection?.kind === 'node' ? nodes.find((n) => n.id === selection.id) : undefined;
   const selectedEdge = selection?.kind === 'edge' ? edges.find((e) => e.id === selection.id) : undefined;
@@ -59,6 +70,7 @@ export const EditorLayout = (props: EditorLayoutProps) => {
       <Header style={{ padding: 0, background: '#0f1115' }}>
         <TopBar
           {...props}
+          onNew={handleNew}
           onRun={
             props.onRun
               ? () => {

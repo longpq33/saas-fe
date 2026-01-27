@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Alert, Collapse, Modal, Tag } from 'antd';
+import { Alert, Modal, Tag } from 'antd';
 import type { SimulateResponse } from '../api/simulate';
-
-const { Panel } = Collapse;
 
 interface ErrorDisplayProps {
   response: SimulateResponse;
@@ -11,15 +9,9 @@ interface ErrorDisplayProps {
 }
 
 export const ErrorDisplay = ({ response, open, onClose }: ErrorDisplayProps) => {
-  const { errors, element_status, summary } = response;
+  const { errors, summary } = response;
 
-  const failedElements = Object.entries(element_status || {}).filter(
-    ([_, status]) => !status.success
-  );
-
-  const hasErrors = errors?.validation?.length > 0;
-
- 
+  const hasErrors = errors?.validation?.length > 0 || errors?.powerflow?.length > 0;
 
   return (
     <Modal
@@ -49,13 +41,11 @@ export const ErrorDisplay = ({ response, open, onClose }: ErrorDisplayProps) => 
         />
 
         {hasErrors && (
-          <Collapse style={{ marginBottom: 16 }}>
-            <Panel header={`Lỗi (${errors?.validation?.length})`} key="warnings">
-              {errors?.validation?.map((warn, idx) => (
+          <>
+              {(errors?.validation || []).concat(errors?.powerflow ?? []).map((warn, idx) => (
                 <Alert key={idx} message={warn?.message} type="warning" style={{ marginBottom: 8 }} />
               ))}
-            </Panel>
-          </Collapse>
+              </>
         )}
       </div>
     </Modal>
