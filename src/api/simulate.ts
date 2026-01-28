@@ -23,6 +23,7 @@ export type BusResult = {
 export type ValidationError = {
   element_id: string;
   element_type: string;
+  element_name?: string;
   field?: string;
   message: string;
 };

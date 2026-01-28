@@ -31,6 +31,7 @@ import { createDefaultStorageData } from '../nodes/storage/defaults';
 import { StorageNode } from '../nodes/storage/StorageNode';
 import { createDefaultTrafo3WData } from '../nodes/trafo3w/defaults';
 import { Trafo3WNode } from '../nodes/trafo3w/Trafo3WNode';
+import { createDefaultLineEdgeData } from '../edges/line/defaults';
 import 'reactflow/dist/style.css';
 import styled from 'styled-components';
 
@@ -88,7 +89,14 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
-      const nextEdges = addEdge({ ...params, animated: true }, edges);
+      const nextEdges = addEdge(
+        {
+          ...params,
+          animated: true,
+          data: createDefaultLineEdgeData(),
+        },
+        edges,
+      );
       onUpdateEdges(nextEdges);
 
       const source = (params as Connection).source ?? (params as Edge).source;
@@ -103,9 +111,16 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
       const targetHandle = (params as Connection).targetHandle ?? (params as Edge).targetHandle;
 
       const isBus = (n: Node) => n.type === 'bus';
-      const isBusBound = (n: Node) => n.type === 'load' || n.type === 'gen' || n.type === 'sgen' || n.type === 'ext_grid' || n.type === 'motor' || n.type === 'shunt' || n.type === 'storage';
+      const isBusBound = (n: Node) =>
+        n.type === 'load' ||
+        n.type === 'gen' ||
+        n.type === 'sgen' ||
+        n.type === 'ext_grid' ||
+        n.type === 'motor' ||
+        n.type === 'shunt' ||
+        n.type === 'storage';
       const isSwitch = (n: Node) => n.type === 'switch';
-      const isElement = (n: Node) => n.type === 'line' || n.type === 'trafo' || n.type === 'bus';
+      const isElement = (n: Node) => n.type === 'transformer' || n.type === 'bus';
       const isTrafo3W = (n: Node) => n.type === 'trafo3w';
 
       // Auto-bind busId for load/gen/sgen/ext_grid
@@ -147,8 +162,11 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
       }
 
       // Auto-bind elementId + elementType for switch (switch -> element via "element" handle)
+      // NOTE: In this app, "line" is a ReactFlow EDGE, not a NODE.
+      // So we can only auto-bind to transformer/bus nodes here. Binding a switch to a line-edge
+      // must be done using the currently selected edge (handled outside this onConnect flow).
       if (isSwitch(sourceNode) && isElement(targetNode) && sourceHandle === 'element') {
-        const elementType = targetNode.type === 'line' ? 'line' : targetNode.type === 'trafo' ? 'trafo' : 'bus';
+        const elementType = targetNode.type === 'transformer' ? 'trafo' : 'bus';
         onUpdateNodes(
           nodes.map((n) => {
             if (n.id !== sourceNode.id) return n;
@@ -163,7 +181,7 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
           }),
         );
       } else if (isSwitch(targetNode) && isElement(sourceNode) && targetHandle === 'element') {
-        const elementType = sourceNode.type === 'line' ? 'line' : sourceNode.type === 'trafo' ? 'trafo' : 'bus';
+        const elementType = sourceNode.type === 'transformer' ? 'trafo' : 'bus';
         onUpdateNodes(
           nodes.map((n) => {
             if (n.id !== targetNode.id) return n;

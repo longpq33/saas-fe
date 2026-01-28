@@ -6,7 +6,7 @@ import type { ExtGridData } from './types';
 const Wrapper = styled.div`
   min-width: 100px;
   padding: 8px 10px;
-  background: #111827;
+  background: #024A70;
   border: 1px solid #7c3aed;
   border-radius: 10px;
   color: #e5e7eb;

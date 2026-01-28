@@ -11,17 +11,17 @@ export const TopBar = ({
   onRun,
 }: TopBarProps) => {
   return (
-    <Flex justify="space-between" align="center" style={{ padding: '8px 12px', background: 'rgba(22,27,34,0.9)', borderBottom: '1px solid #1f2937' }}>
+    <Flex justify="center" align="center" style={{ padding: '8px 12px', background: '#024A70', borderBottom: '1px solid #1f2937', gap: 10 }}>
       <Space>
         <Tooltip title="Tạo mới">
-          <Button size="small" icon={<PlusSquareOutlined />} onClick={onNew}>
+          <Button style={{ background: '#1C69A8', height: 40 }} type="primary"   icon={<PlusSquareOutlined />} onClick={onNew}>
             New
           </Button>
         </Tooltip>
       </Space>
       <Space>
         <Tooltip title="Chạy mô phỏng">
-          <Button type="primary" size="small" icon={<PlayCircleOutlined />} onClick={onRun}>
+          <Button style={{ background: '#2D9966', height: 40 }} type="primary" icon={<PlayCircleOutlined />} onClick={onRun}>
             Run
           </Button>
         </Tooltip>

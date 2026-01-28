@@ -5,22 +5,22 @@ import { getPaletteGroups } from '../nodes';
 
 const DraggableItem = styled.div`
   padding: 8px 10px;
-  background: #1c212b;
-  border: 1px solid #1f2937;
+  background: #024A70;
   border-radius: 6px;
   color: #e6e9f0;
   cursor: grab;
   &:hover {
-    background: #202635;
+    background: #0487CD;
   }
 `;
 
 const GroupTitle = styled(Typography.Text)`
   font-size: 12px;
-  font-weight: 600;
-  color: #8b949e;
+  font-weight: 700;
+  color: #222;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+
 `;
 
 const GroupContainer = styled.div`

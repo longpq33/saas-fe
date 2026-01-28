@@ -42,10 +42,33 @@ export const ErrorDisplay = ({ response, open, onClose }: ErrorDisplayProps) => 
 
         {hasErrors && (
           <>
-              {(errors?.validation || []).concat(errors?.powerflow ?? []).map((warn, idx) => (
-                <Alert key={idx} message={warn?.message} type="warning" style={{ marginBottom: 8 }} />
-              ))}
-              </>
+            {(Object.entries(errors ?? {}) as Array<[string, Array<{ element_id?: string; element_type?: string; element_name?: string; field?: string; message?: string }>]>).flatMap(
+              ([group, list]) => (list ?? []).map((err, idx) => ({ group, err, idx })),
+            )
+              .sort((a, b) => a.group.localeCompare(b.group) || a.idx - b.idx)
+              .map(({ group, err }, idx) => {
+                const titleParts = [
+                  err?.element_name ? `${err.element_name}` : undefined,
+                  err?.element_type ? `type=${err.element_type}` : undefined,
+                  err?.element_id ? `id=${err.element_id}` : undefined,
+                  err?.field ? `field=${err.field}` : undefined,
+                ].filter(Boolean);
+
+                const title = titleParts.length ? titleParts.join(' | ') : group;
+                const description = err?.message ?? 'Unknown error';
+
+                return (
+                  <Alert
+                    key={`${group}-${idx}`}
+                    message={title}
+                    description={description}
+                    type={group === 'powerflow' ? 'error' : 'warning'}
+                    showIcon
+                    style={{ marginBottom: 8 }}
+                  />
+                );
+              })}
+          </>
         )}
       </div>
     </Modal>

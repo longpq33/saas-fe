@@ -80,11 +80,11 @@ export const EditorLayout = (props: EditorLayoutProps) => {
           }
         />
       </Header>
-      <Layout>
-        <Sider width={200} style={{ background: '#fff', borderRight: '1px solid #1f2937', padding: '8px', overflow: 'hidden', height: 'calc(100vh - 60px)' }}>
+      <Layout style={{ background: '#024A70' }}>
+        <Sider width={200} style={{ background: '#024A70', padding: '8px', overflow: 'hidden', height: 'calc(100vh - 60px)' }}>
           <LeftPalette />
         </Sider>
-        <Content style={{ background: '#0f1115', padding: '8px' }}>
+        <Content style={{ background: '#024A70'}}>
           <PanelWrapper>
             <GridCanvas 
               nodes={nodes}
@@ -95,7 +95,7 @@ export const EditorLayout = (props: EditorLayoutProps) => {
             />
           </PanelWrapper>
         </Content>
-        <Sider width={300} style={{ background: '#0f1115', borderLeft: '1px solid #1f2937', padding: '8px', height: 'calc(100vh - 60px)' }}>
+        <Sider width={300} style={{ background: '#024A70', padding: '8px', height: 'calc(100vh - 60px)' }}>
           <RightInspector
             selectionNode={selectedNode}
             selectionEdge={selectedEdge}
