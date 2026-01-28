@@ -5,6 +5,7 @@ export type SimulateSettings = {
   algorithm?: string;
   max_iter?: number;
   tolerance_mva?: number;
+  return_network?: 'none' | 'summary' | 'tables';
 };
 
 export type SimulateRequest = {
@@ -121,6 +122,11 @@ export type SimulateResponse = {
     trafos?: Record<string, TrafoResult>;
     trafo3ws?: Record<string, Trafo3WResult>;
   };
+  network?: {
+    meta: Record<string, unknown>;
+    tables?: Record<string, Array<Record<string, unknown>>>;
+    results?: Record<string, Array<Record<string, unknown>>>;
+  } | null;
 };
 
 const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';

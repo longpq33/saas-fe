@@ -72,7 +72,7 @@ export const RightInspector = ({
       size="small"
       bordered={false}
       bodyStyle={{ padding: 12, background: '#fff' }}
-      style={{ background: '#fff', height: '100%' }}
+      style={{ background: '#fff', height: '100%', overflow: 'auto' }}
     >
       <Tabs
         size="small"

@@ -35,7 +35,7 @@ export const TransformerConfigForm = ({ value, onSubmit }: TransformerConfigForm
         <Input disabled />
       </Form.Item>
 
-      <Button htmlType="submit" type="primary" block>
+      <Button htmlType="submit" type="primary" block style={{ width: '100%',  backgroundColor: '#024A70', borderColor: '#024A70', height: 40 }}>
         Apply
       </Button>
     </Form>

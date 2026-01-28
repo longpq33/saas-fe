@@ -18,7 +18,7 @@ const StyledLayout = styled(Layout)`
 `;
 
 const PanelWrapper = styled.div`
-  height: calc(100vh - 70px);
+  height: calc(100vh - 55px);
   padding: 8px;
 `;
 
@@ -26,6 +26,7 @@ type EditorLayoutProps = {
   initialNodes?: Node[];
   initialEdges?: Edge[];
   resetKey?: number;
+  resultsPanel?: React.ReactNode;
   onNew?: () => void;
   onSave?: () => void;
   onExport?: () => void;
@@ -81,7 +82,7 @@ export const EditorLayout = (props: EditorLayoutProps) => {
         />
       </Header>
       <Layout style={{ background: '#024A70' }}>
-        <Sider width={200} style={{ background: '#024A70', padding: '8px', overflow: 'hidden', height: 'calc(100vh - 60px)' }}>
+        <Sider width={250} style={{ background: '#024A70', padding: '8px', overflow: 'hidden', height: 'calc(100vh - 70px)' }}>
           <LeftPalette />
         </Sider>
         <Content style={{ background: '#024A70'}}>
@@ -95,7 +96,7 @@ export const EditorLayout = (props: EditorLayoutProps) => {
             />
           </PanelWrapper>
         </Content>
-        <Sider width={300} style={{ background: '#024A70', padding: '8px', height: 'calc(100vh - 60px)' }}>
+        <Sider width={250} style={{ background: '#024A70', padding: '8px', height: 'calc(100vh - 70px)',  overflow: 'hidden', }}>
           <RightInspector
             selectionNode={selectedNode}
             selectionEdge={selectedEdge}

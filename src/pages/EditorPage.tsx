@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 import type { Edge, Node } from 'reactflow';
 
 import { simulate, type SimulateResponse } from '../api/simulate';
-import { ErrorDisplay } from '../components/ErrorDisplay';
+import { ResultsModal } from '../components/ResultsModal';
 import { EditorLayout } from '../layout/EditorLayout';
 
 type EditorRouteState = {
@@ -27,7 +27,7 @@ export const EditorPage = () => {
     };
   }, [routeState?.diagramData?.edges, routeState?.diagramData?.nodes]);
 
-  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [resultsModalOpen, setResultsModalOpen] = useState(false);
   const [lastResponse, setLastResponse] = useState<SimulateResponse | null>(null);
 
   const handleStub = (action: string) => () => {
@@ -36,6 +36,8 @@ export const EditorPage = () => {
 
   const simulateMutation = useMutation({
     mutationFn: async (payload: { nodes: Node[]; edges: Edge[] }) => {
+      setResultsModalOpen(false);
+      setLastResponse(null);
       return simulate({
         nodes: payload.nodes.map((n) => ({ id: n.id, type: n.type ?? '', data: n.data })),
         edges: payload.edges.map((e) => ({
@@ -44,39 +46,14 @@ export const EditorPage = () => {
           target: e.target,
           data: e.data,
         })),
+        settings: {
+          return_network: 'tables',
+        },
       });
-    },
-    onMutate: () => {
-      message.loading({ content: 'Đang chạy mô phỏng...', key: 'sim' });
     },
     onSuccess: (res) => {
       setLastResponse(res);
-
-      const totalErrors = (res.errors?.validation?.length ?? 0) + (res.errors?.powerflow?.length ?? 0);
-      const failedElements = Object.values(res.element_status || {}).filter((s) => !s.success).length;
-      const hasIssues =
-        totalErrors > 0 ||
-        failedElements > 0 ||
-        !res.summary.converged ||
-        (res.warnings?.length ?? 0) > 0;
-
-      if (hasIssues) {
-        const issueCount = totalErrors;
-        message.warning({
-          content: <span>Mô phỏng hoàn thành với {issueCount} vấn đề. </span>,
-          key: 'sim',
-          duration: 2,
-        });
-        setTimeout(() => {
-          setErrorModalOpen(true);
-        }, 100);
-      } else {
-        message.success({
-          content: `Mô phỏng thành công trong ${res.summary.runtime_ms}ms`,
-          key: 'sim',
-          duration: 3,
-        });
-      }
+      setResultsModalOpen(true);
     },
     onError: (err: unknown) => {
       const errorMessage = err instanceof Error ? err.message : 'Lỗi không xác định';
@@ -85,7 +62,6 @@ export const EditorPage = () => {
         key: 'sim',
         duration: 6,
       });
-      console.error('Simulation error:', err);
     },
   });
 
@@ -94,7 +70,7 @@ export const EditorPage = () => {
   const handleNew = () => {
     setResetKey((k) => k + 1);
     setLastResponse(null);
-    setErrorModalOpen(false);
+    setResultsModalOpen(false);
   };
 
   const handleRun = (payload: { nodes: Node[]; edges: Edge[] }) => {
@@ -117,11 +93,11 @@ export const EditorPage = () => {
         onRun={handleRun}
         onFit={handleStub('Fit')}
       />
-      {lastResponse && (
-        <ErrorDisplay
+      {lastResponse && resultsModalOpen && (
+        <ResultsModal
           response={lastResponse}
-          open={errorModalOpen}
-          onClose={() => setErrorModalOpen(false)}
+          open={resultsModalOpen}
+          onClose={() => setResultsModalOpen(false)}
         />
       )}
     </>

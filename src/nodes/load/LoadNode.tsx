@@ -21,7 +21,7 @@ const Title = styled.div`
 
 const Subtitle = styled.div`
   margin-top: 2px;
-  font-size: 10px;
+  font-size: 8px;
   color: #9ca3af;
 `;
 

@@ -47,7 +47,7 @@ export const BusConfigForm = ({ value, onSubmit }: BusConfigFormProps) => {
       </Form.Item>
 
       <Form.Item>
-        <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
+        <Button type="primary" htmlType="submit" style={{ width: '100%',  backgroundColor: '#024A70', borderColor: '#024A70', height: 40 }}>
           Apply
         </Button>
       </Form.Item>

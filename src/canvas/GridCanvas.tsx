@@ -82,23 +82,70 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
 
   const onEdgesChange = useCallback(
     (changes: EdgeChange[]) => {
+      const removedEdgeIds = changes.filter((c) => c.type === 'remove').map((c) => c.id);
+      const removedEdges = removedEdgeIds.length ? edges.filter((e) => removedEdgeIds.includes(e.id)) : [];
+
+      const attachTypes = new Set(['ext_grid', 'load', 'gen', 'sgen', 'motor', 'shunt', 'storage']);
+
+      // For each removed attach edge, clear busId on the equipment node if it no longer
+      // has any remaining attach edge connected to a bus.
+      const equipmentIdsToMaybeClear = new Set<string>();
+
+      for (const e of removedEdges) {
+        const data = (e.data ?? {}) as Record<string, unknown>;
+        if (String(data.kind) !== 'attach') continue;
+        const attachType = String(data.attach_type ?? '');
+        if (!attachTypes.has(attachType)) continue;
+
+        const srcNode = nodes.find((n) => n.id === e.source);
+        const tgtNode = nodes.find((n) => n.id === e.target);
+        if (!srcNode || !tgtNode) continue;
+
+        // identify equipment endpoint by attach_type
+        if (srcNode.type === attachType) {
+          equipmentIdsToMaybeClear.add(srcNode.id);
+        } else if (tgtNode.type === attachType) {
+          equipmentIdsToMaybeClear.add(tgtNode.id);
+        }
+      }
+
+      if (equipmentIdsToMaybeClear.size > 0) {
+        const edgesAfterRemoval = applyEdgeChanges(changes, edges);
+
+        const shouldClear = (equipmentId: string) => {
+          // If there is any remaining attach edge between this equipment and a bus, keep busId.
+          return !edgesAfterRemoval.some((e) => {
+            const data = (e.data ?? {}) as Record<string, unknown>;
+            if (String(data.kind) !== 'attach') return false;
+            const attachType = String(data.attach_type ?? '');
+            const n1 = nodes.find((n) => n.id === e.source);
+            const n2 = nodes.find((n) => n.id === e.target);
+            if (!n1 || !n2) return false;
+            if (attachType !== n1.type && attachType !== n2.type) return false;
+            const hasEquipment = e.source === equipmentId || e.target === equipmentId;
+            const hasBus = n1.type === 'bus' || n2.type === 'bus';
+            return hasEquipment && hasBus;
+          });
+        };
+
+        const nextNodes = nodes.map((n) => {
+          if (!equipmentIdsToMaybeClear.has(n.id)) return n;
+          if (!shouldClear(n.id)) return n;
+          return { ...n, data: { ...(n.data as Record<string, unknown>), busId: '' } };
+        });
+
+        onUpdateNodes(nextNodes);
+        onUpdateEdges(edgesAfterRemoval);
+        return;
+      }
+
       onUpdateEdges(applyEdgeChanges(changes, edges));
     },
-    [edges, onUpdateEdges],
+    [edges, nodes, onUpdateEdges, onUpdateNodes],
   );
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
-      const nextEdges = addEdge(
-        {
-          ...params,
-          animated: true,
-          data: createDefaultLineEdgeData(),
-        },
-        edges,
-      );
-      onUpdateEdges(nextEdges);
-
       const source = (params as Connection).source ?? (params as Edge).source;
       const target = (params as Connection).target ?? (params as Edge).target;
       if (!source || !target) return;
@@ -107,10 +154,11 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
       const targetNode = nodes.find((n) => n.id === target);
       if (!sourceNode || !targetNode) return;
 
+      const isBus = (n: Node) => n.type === 'bus';
+
       const sourceHandle = (params as Connection).sourceHandle ?? (params as Edge).sourceHandle;
       const targetHandle = (params as Connection).targetHandle ?? (params as Edge).targetHandle;
 
-      const isBus = (n: Node) => n.type === 'bus';
       const isBusBound = (n: Node) =>
         n.type === 'load' ||
         n.type === 'gen' ||
@@ -119,6 +167,53 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
         n.type === 'motor' ||
         n.type === 'shunt' ||
         n.type === 'storage';
+
+      // Edge kinds
+      // - line: only bus <-> bus (pandapower line)
+      // - attach: equipment <-> bus (UI + binding), attach_type is the equipment type
+      // - attach(ext_grid): ext_grid -> bus (special, keep one-way)
+      if (isBus(sourceNode) && isBus(targetNode)) {
+        const nextEdges = addEdge(
+          {
+            ...params,
+            animated: true,
+            data: { ...createDefaultLineEdgeData(), kind: 'line' },
+          },
+          edges,
+        );
+        onUpdateEdges(nextEdges);
+      } else if (sourceNode.type === 'ext_grid' && isBus(targetNode)) {
+        const nextEdges = addEdge(
+          {
+            ...params,
+            animated: false,
+            data: { kind: 'attach', attach_type: 'ext_grid' },
+          },
+          edges,
+        );
+        onUpdateEdges(nextEdges);
+      } else if (isBus(sourceNode) && isBusBound(targetNode)) {
+        const nextEdges = addEdge(
+          {
+            ...params,
+            animated: false,
+            data: { kind: 'attach', attach_type: targetNode.type },
+          },
+          edges,
+        );
+        onUpdateEdges(nextEdges);
+      } else if (isBus(targetNode) && isBusBound(sourceNode)) {
+        const nextEdges = addEdge(
+          {
+            ...params,
+            animated: false,
+            data: { kind: 'attach', attach_type: sourceNode.type },
+          },
+          edges,
+        );
+        onUpdateEdges(nextEdges);
+      }
+
       const isSwitch = (n: Node) => n.type === 'switch';
       const isElement = (n: Node) => n.type === 'transformer' || n.type === 'bus';
       const isTrafo3W = (n: Node) => n.type === 'trafo3w';
