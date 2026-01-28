@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Alert, Tag } from 'antd';
+import { Alert } from 'antd';
 import type { SimulateResponse } from '../api/simulate';
 
 interface ErrorDisplayContentProps {
