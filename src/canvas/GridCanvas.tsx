@@ -11,6 +11,8 @@ import type { Connection, Edge, Node, NodeChange, EdgeChange } from 'reactflow';
 
 import { createDefaultBusData } from '../nodes/bus/defaults';
 import { BusNode } from '../nodes/bus/BusNode';
+import { createDefaultLineData } from '../nodes/line/defaults';
+import { LineNode } from '../nodes/line/LineNode';
 import { createDefaultLoadData } from '../nodes/load/defaults';
 import { LoadNode } from '../nodes/load/LoadNode';
 import { createDefaultTransformerData } from '../nodes/transformer/defaults';
@@ -59,6 +61,7 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
   const nodeTypes = useMemo(
     () => ({
       bus: BusNode,
+      line: LineNode,
       load: LoadNode,
       transformer: TransformerNode,
       ext_grid: ExtGridNode,
@@ -85,9 +88,9 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
       const removedEdgeIds = changes.filter((c) => c.type === 'remove').map((c) => c.id);
       const removedEdges = removedEdgeIds.length ? edges.filter((e) => removedEdgeIds.includes(e.id)) : [];
 
-      const attachTypes = new Set(['ext_grid', 'load', 'gen', 'sgen', 'motor', 'shunt', 'storage']);
+      const attachTypes = new Set(['ext_grid', 'load', 'gen', 'sgen', 'motor', 'shunt', 'storage', 'switch', 'line']);
 
-      // For each removed attach edge, clear busId on the equipment node if it no longer
+      // For each removed attach edge, clear binding fields on the node if it no longer
       // has any remaining attach edge connected to a bus.
       const equipmentIdsToMaybeClear = new Set<string>();
 
@@ -168,50 +171,74 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
         n.type === 'shunt' ||
         n.type === 'storage';
 
+      const isLineNode = (n: Node) => n.type === 'line';
+
       // Edge kinds
-      // - line: only bus <-> bus (pandapower line)
-      // - attach: equipment <-> bus (UI + binding), attach_type is the equipment type
+      // - attach: UI connection + binding. Topology is stored in node.data (e.g., line.fromBusId/toBusId)
       // - attach(ext_grid): ext_grid -> bus (special, keep one-way)
-      if (isBus(sourceNode) && isBus(targetNode)) {
-        const nextEdges = addEdge(
-          {
-            ...params,
-            animated: true,
-            data: { ...createDefaultLineEdgeData(), kind: 'line' },
-          },
-          edges,
-        );
-        onUpdateEdges(nextEdges);
-      } else if (sourceNode.type === 'ext_grid' && isBus(targetNode)) {
-        const nextEdges = addEdge(
-          {
-            ...params,
-            animated: false,
-            data: { kind: 'attach', attach_type: 'ext_grid' },
-          },
-          edges,
-        );
-        onUpdateEdges(nextEdges);
-      } else if (isBus(sourceNode) && isBusBound(targetNode)) {
-        const nextEdges = addEdge(
-          {
-            ...params,
-            animated: false,
-            data: { kind: 'attach', attach_type: targetNode.type },
-          },
-          edges,
-        );
-        onUpdateEdges(nextEdges);
-      } else if (isBus(targetNode) && isBusBound(sourceNode)) {
-        const nextEdges = addEdge(
-          {
-            ...params,
-            animated: false,
-            data: { kind: 'attach', attach_type: sourceNode.type },
-          },
-          edges,
-        );
-        onUpdateEdges(nextEdges);
+      // NOTE: Legacy bus<->bus "line" edge creation is disabled (use Line node instead).
+
+      // bus <-> line (attach + bind from/to)
+      const bindBusToLine = (bus: Node, line: Node, handleId?: string | null) => {
+        if (handleId === 'from') {
+          onUpdateNodes(
+            nodes.map((n) =>
+              n.id === line.id ? { ...n, data: { ...(n.data as Record<string, unknown>), fromBusId: bus.id } } : n,
+            ),
+          );
+        } else if (handleId === 'to') {
+          onUpdateNodes(
+            nodes.map((n) =>
+              n.id === line.id ? { ...n, data: { ...(n.data as Record<string, unknown>), toBusId: bus.id } } : n,
+            ),
+          );
+        }
+      };
+
+      // Decide edge kind but never block creating an edge
+      const mkEdgeData = (): Record<string, unknown> => {
+        // bus <-> bus => line
+        if (isBus(sourceNode) && isBus(targetNode)) {
+          return { ...createDefaultLineEdgeData(), kind: 'line' };
+        }
+
+        // ext_grid -> bus => attach ext_grid (one-way by convention)
+        if (sourceNode.type === 'ext_grid' && isBus(targetNode)) {
+          return { kind: 'attach', attach_type: 'ext_grid' };
+        }
+
+        // bus <-> line-node => attach line
+        if ((isBus(sourceNode) && isLineNode(targetNode)) || (isBus(targetNode) && isLineNode(sourceNode))) {
+          return { kind: 'attach', attach_type: 'line' };
+        }
+
+        // bus <-> bus-bound equipment => attach <type>
+        if (isBus(sourceNode) && isBusBound(targetNode)) {
+          return { kind: 'attach', attach_type: targetNode.type };
+        }
+        if (isBus(targetNode) && isBusBound(sourceNode)) {
+          return { kind: 'attach', attach_type: sourceNode.type };
+        }
+
+        // default: UI edge
+        return { kind: 'ui' };
+      };
+
+      const nextEdges = addEdge(
+        {
+          ...params,
+          animated: false,
+          data: mkEdgeData(),
+        },
+        edges,
+      );
+      onUpdateEdges(nextEdges);
+
+      // Lightweight auto-bind (do not block edge creation)
+      if (isBus(sourceNode) && isLineNode(targetNode)) {
+        bindBusToLine(sourceNode, targetNode, targetHandle);
+      } else if (isBus(targetNode) && isLineNode(sourceNode)) {
+        bindBusToLine(targetNode, sourceNode, sourceHandle);
       }
 
       const isSwitch = (n: Node) => n.type === 'switch';
@@ -239,8 +266,18 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
         );
       }
 
-      // Auto-bind busId for switch (bus -> switch via "bus" handle)
+      // bus <-> switch (attach + bind busId)
       if (isBus(sourceNode) && isSwitch(targetNode) && targetHandle === 'bus') {
+        const nextEdges = addEdge(
+          {
+            ...params,
+            animated: false,
+            data: { kind: 'attach', attach_type: 'switch' },
+          },
+          edges,
+        );
+        onUpdateEdges(nextEdges);
+
         onUpdateNodes(
           nodes.map((n) => {
             if (n.id !== targetNode.id) return n;
@@ -248,6 +285,16 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
           }),
         );
       } else if (isBus(targetNode) && isSwitch(sourceNode) && sourceHandle === 'bus') {
+        const nextEdges = addEdge(
+          {
+            ...params,
+            animated: false,
+            data: { kind: 'attach', attach_type: 'switch' },
+          },
+          edges,
+        );
+        onUpdateEdges(nextEdges);
+
         onUpdateNodes(
           nodes.map((n) => {
             if (n.id !== sourceNode.id) return n;
@@ -255,6 +302,7 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
           }),
         );
       }
+
 
       // Auto-bind elementId + elementType for switch (switch -> element via "element" handle)
       // NOTE: In this app, "line" is a ReactFlow EDGE, not a NODE.
@@ -383,6 +431,9 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
           break;
         case 'load':
           defaultData = createDefaultLoadData();
+          break;
+        case 'line':
+          defaultData = createDefaultLineData();
           break;
         case 'transformer':
           defaultData = createDefaultTransformerData();

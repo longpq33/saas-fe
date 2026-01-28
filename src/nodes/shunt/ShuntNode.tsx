@@ -6,7 +6,7 @@ import type { ShuntData } from './types';
 const Wrapper = styled.div`
   min-width: 100px;
   padding: 8px 10px;
-  background: #024A70;
+  background: #06b6d4;
   border: 1px solid #06b6d4;
   border-radius: 10px;
   color: #e5e7eb;
@@ -22,7 +22,7 @@ const Title = styled.div`
 const Subtitle = styled.div`
   margin-top: 2px;
   font-size: 8px;
-  color: #9ca3af;
+  color: #222;
 `;
 
 type ShuntNodeProps = {

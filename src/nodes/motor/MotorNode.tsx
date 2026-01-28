@@ -6,7 +6,7 @@ import type { MotorData } from './types';
 const Wrapper = styled.div`
   min-width: 150px;
   padding: 8px 10px;
-  background: #024A70;
+  background: #312C85;
   border: 1px solid #8b5cf6;
   border-radius: 10px;
   color: #e5e7eb;

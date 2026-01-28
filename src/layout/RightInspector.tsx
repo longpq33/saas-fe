@@ -9,6 +9,10 @@ import { BusConfigForm } from '../nodes/bus/BusConfigForm';
 import { createDefaultBusData } from '../nodes/bus/defaults';
 import type { BusData } from '../nodes/bus/types';
 
+import { LineConfigForm as LineNodeConfigForm } from '../nodes/line/LineConfigForm';
+import { createDefaultLineData } from '../nodes/line/defaults';
+import type { LineData } from '../nodes/line/types';
+
 import { LoadConfigForm } from '../nodes/load/LoadConfigForm';
 import { createDefaultLoadData } from '../nodes/load/defaults';
 import type { LoadData } from '../nodes/load/types';
@@ -106,6 +110,14 @@ export const RightInspector = ({
                       key={selectionNode.id}
                       value={(selectionNode.data as BusData) ?? createDefaultBusData()}
                       onSubmit={updateNode as (v: BusData) => void}
+                    />
+                  );
+                case 'line':
+                  return (
+                    <LineNodeConfigForm
+                      key={selectionNode.id}
+                      value={(selectionNode.data as LineData) ?? createDefaultLineData()}
+                      onSubmit={updateNode as (v: LineData) => void}
                     />
                   );
                 case 'load':

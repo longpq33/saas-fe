@@ -1,5 +1,5 @@
-import { DatabaseOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Input, Layout, Menu, Modal, Row, Select, Space, Typography } from 'antd';
+import { QuestionCircleOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Layout, Menu, Modal, Row, Space, Typography } from 'antd';
 import React, { useMemo, useState } from 'react';
 import { diagramTemplates, getCategories, getTemplatesByCategory } from '../templates';
 import type { DiagramTemplate } from '../templates';
@@ -14,7 +14,6 @@ interface NewDiagramDialogProps {
 }
 
 export const NewDiagramDialog: React.FC<NewDiagramDialogProps> = ({ open, onClose, onCreate }) => {
-  const [filename, setFilename] = useState('Untitled Diagram');
   const [selectedCategory, setSelectedCategory] = useState<string>(getCategories()[0]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(diagramTemplates[0].id);
 
@@ -24,7 +23,7 @@ export const NewDiagramDialog: React.FC<NewDiagramDialogProps> = ({ open, onClos
   const handleCreate = () => {
     const template = diagramTemplates.find((t) => t.id === selectedTemplateId);
     if (template) {
-      onCreate(template, `${filename}.json`);
+      onCreate(template, "text.json");
       onClose();
     }
   };
@@ -48,18 +47,6 @@ export const NewDiagramDialog: React.FC<NewDiagramDialogProps> = ({ open, onClos
       ]}
     >
       <Space direction="vertical" style={{ width: '100%' }}>
-        <Space.Compact block>
-          <Input
-            addonBefore={<DatabaseOutlined />}
-            value={filename}
-            onChange={(e) => setFilename(e.target.value)}
-            placeholder="Filename"
-          />
-          <Select value=".json" disabled style={{ width: 120 }}>
-            <Select.Option value=".json">JSON File (.json)</Select.Option>
-          </Select>
-        </Space.Compact>
-
         <Layout style={{ background: '#fff', minHeight: 300 }}>
           <Sider width={200} style={{ background: '#fff' }}>
             <Menu

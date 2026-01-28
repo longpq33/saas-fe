@@ -1,5 +1,6 @@
 import { busPrototype } from './bus/prototype';
 import { loadPrototype } from './load/prototype';
+import { linePrototype } from './line/prototype';
 import { transformerPrototype } from './transformer/prototype';
 import { extGridPrototype } from './ext_grid/prototype';
 import { genPrototype } from './gen/prototype';
@@ -12,6 +13,7 @@ import { trafo3wPrototype } from './trafo3w/prototype';
 
 export const NODE_PROTOTYPES = [
   busPrototype,
+  linePrototype,
   loadPrototype,
   transformerPrototype,
   extGridPrototype,
@@ -46,6 +48,7 @@ const CATEGORY_STORAGE = 'storage';
 const getCategoryForNode = (nodeType: string): string => {
   const categoryMap: Record<string, string> = {
     bus: CATEGORY_NETWORK,
+    line: CATEGORY_NETWORK,
     switch: CATEGORY_NETWORK,
     gen: CATEGORY_GENERATORS,
     sgen: CATEGORY_GENERATORS,

@@ -6,7 +6,7 @@ import type { BusData } from './types';
 const Wrapper = styled.div`
   min-width: 80px;
   padding: 6px 10px;
-  background: #024A70;
+  background: #034F3B;
   border: 1px solid #374151;
   border-radius: 10px;
   color: #e5e7eb;

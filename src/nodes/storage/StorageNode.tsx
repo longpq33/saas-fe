@@ -6,7 +6,7 @@ import type { StorageData } from './types';
 const Wrapper = styled.div`
   min-width: 100px;
   padding: 8px 10px;
-  background: #024A70;
+  background: #861043;
   border: 1px solid #14b8a6;
   border-radius: 10px;
   color: #e5e7eb;

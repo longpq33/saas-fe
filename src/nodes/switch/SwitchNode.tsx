@@ -31,7 +31,7 @@ type SwitchNodeProps = {
 
 export const SwitchNode = ({ data }: SwitchNodeProps) => {
   const status = data?.closed ? 'CLOSED' : 'OPEN';
-  const statusColor = data?.closed ? '#10b981' : '#ef4444';
+  const statusColor = data?.closed ? '#ef4444' : '#10b981';
 
   return (
     <Wrapper>
