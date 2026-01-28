@@ -129,7 +129,7 @@ export type SimulateResponse = {
   } | null;
 };
 
-const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
+const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'https://grid-power-api.onrender.com';
 
 export async function simulate(payload: SimulateRequest): Promise<SimulateResponse> {
   const res = await axios.post<SimulateResponse>(`${apiBase}/api/v1/simulate`, payload, {
