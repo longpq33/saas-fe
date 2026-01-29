@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Layout, Spin } from 'antd';
+import { Layout } from 'antd';
 import styled from 'styled-components';
 import { LeftPalette } from './LeftPalette';
 import { TopBar } from './TopBar';
