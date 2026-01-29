@@ -4,11 +4,13 @@ import { PlayCircleOutlined, PlusSquareOutlined } from '@ant-design/icons';
 type TopBarProps = {
   onNew?: () => void;
   onRun?: () => void;
+  isSimulating?: boolean;
 };
 
 export const TopBar = ({
   onNew,
   onRun,
+  isSimulating,
 }: TopBarProps) => {
   return (
     <Flex justify="center" align="center" style={{ padding: '8px 12px', background: '#024A70', borderBottom: '1px solid #1f2937', gap: 10 }}>
@@ -21,7 +23,14 @@ export const TopBar = ({
       </Space>
       <Space>
         <Tooltip title="Chạy mô phỏng">
-          <Button style={{ background: '#2D9966', height: 40 }} type="primary" icon={<PlayCircleOutlined />} onClick={onRun}>
+          <Button
+            style={{ background: '#2D9966', height: 40 }}
+            type="primary"
+            icon={<PlayCircleOutlined />}
+            onClick={onRun}
+            disabled={isSimulating}
+            loading={isSimulating}
+          >
             Run
           </Button>
         </Tooltip>
