@@ -37,6 +37,13 @@ import { DcBusNode } from '../nodes/dc_bus/DcBusNode';
 import { DcLineNode } from '../nodes/dcline/DcLineNode';
 import { DcLoadNode } from '../nodes/dc_load/DcLoadNode';
 import { DcSourceNode } from '../nodes/dc_source/DcSourceNode';
+import { AsymmetricLoadNode } from '../nodes/asymmetric_load/AsymmetricLoadNode';
+import { AsymmetricSGenNode } from '../nodes/asymmetric_sgen/AsymmetricSGenNode';
+import { ImpedanceNode } from '../nodes/impedance/ImpedanceNode';
+import { WardNode } from '../nodes/ward/WardNode';
+import { XWardNode } from '../nodes/xward/XWardNode';
+import { MeasurementNode } from '../nodes/measurement/MeasurementNode';
+import { HvdcLinkNode } from '../nodes/hvdc_link/HvdcLinkNode';
 import { createDefaultLineEdgeData } from '../edges/line/defaults';
 import 'reactflow/dist/style.css';
 import styled from 'styled-components';
@@ -80,6 +87,13 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
       dcline: DcLineNode,
       dc_load: DcLoadNode,
       dc_source: DcSourceNode,
+      asymmetric_load: AsymmetricLoadNode,
+      asymmetric_sgen: AsymmetricSGenNode,
+      impedance: ImpedanceNode,
+      ward: WardNode,
+      xward: XWardNode,
+      measurement: MeasurementNode,
+      hvdc_link: HvdcLinkNode,
     }),
     [],
   );
@@ -110,6 +124,13 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
         'dcline',
         'dc_load',
         'dc_source',
+        'asymmetric_load',
+        'asymmetric_sgen',
+        'impedance',
+        'ward',
+        'xward',
+        'measurement',
+        'hvdc_link',
       ]);
 
       // For each removed attach edge, clear binding fields on the node if it no longer
@@ -193,9 +214,13 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
         n.type === 'shunt' ||
         n.type === 'storage' ||
         n.type === 'dc_load' ||
-        n.type === 'dc_source';
+        n.type === 'dc_source' ||
+        n.type === 'asymmetric_load' ||
+        n.type === 'asymmetric_sgen' ||
+        n.type === 'ward' ||
+        n.type === 'xward';
 
-      const isLineNode = (n: Node) => n.type === 'line' || n.type === 'dcline';
+      const isLineNode = (n: Node) => n.type === 'line' || n.type === 'dcline' || n.type === 'impedance' || n.type === 'hvdc_link';
 
       // Edge kinds
       // - attach: UI connection + binding. Topology is stored in node.data (e.g., line.fromBusId/toBusId)
@@ -219,7 +244,7 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
         }
       };
 
-      // AC bus <-> dcline (attach + bind from/to)
+      // AC bus <-> dcline/impedance/hvdc_link (attach + bind from/to)
       const bindBusToDcLine = (bus: Node, dcline: Node, handleId?: string | null) => {
         if (handleId === 'from') {
           onUpdateNodes(
@@ -258,12 +283,12 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
           return { kind: 'attach', attach_type: 'line' };
         }
 
-        // AC bus <-> dcline => attach dcline (DC line connects AC buses)
+        // AC bus <-> dcline/impedance/hvdc_link => attach (connects AC buses)
         if (
-          (sourceNode.type === 'bus' && targetNode.type === 'dcline') ||
-          (targetNode.type === 'bus' && sourceNode.type === 'dcline')
+          (sourceNode.type === 'bus' && (targetNode.type === 'dcline' || targetNode.type === 'impedance' || targetNode.type === 'hvdc_link')) ||
+          (targetNode.type === 'bus' && (sourceNode.type === 'dcline' || sourceNode.type === 'impedance' || sourceNode.type === 'hvdc_link'))
         ) {
-          return { kind: 'attach', attach_type: 'dcline' };
+          return { kind: 'attach', attach_type: targetNode.type === 'bus' ? sourceNode.type : targetNode.type };
         }
 
         // dc_bus <-> dc_load/dc_source => attach <type>
@@ -298,13 +323,13 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
 
       // Lightweight auto-bind (do not block edge creation)
       if (isBus(sourceNode) && isLineNode(targetNode)) {
-        if (targetNode.type === 'dcline') {
+        if (targetNode.type === 'dcline' || targetNode.type === 'impedance' || targetNode.type === 'hvdc_link') {
           bindBusToDcLine(sourceNode, targetNode, targetHandle);
         } else {
           bindBusToLine(sourceNode, targetNode, targetHandle);
         }
       } else if (isBus(targetNode) && isLineNode(sourceNode)) {
-        if (sourceNode.type === 'dcline') {
+        if (sourceNode.type === 'dcline' || sourceNode.type === 'impedance' || sourceNode.type === 'hvdc_link') {
           bindBusToDcLine(targetNode, sourceNode, sourceHandle);
         } else {
           bindBusToLine(targetNode, sourceNode, sourceHandle);

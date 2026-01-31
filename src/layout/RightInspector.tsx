@@ -69,6 +69,34 @@ import { DcSourceConfigForm } from '../nodes/dc_source/DcSourceConfigForm';
 import { createDefaultDcSourceData } from '../nodes/dc_source/defaults';
 import type { DcSourceData } from '../nodes/dc_source/types';
 
+import { AsymmetricLoadConfigForm } from '../nodes/asymmetric_load/AsymmetricLoadConfigForm';
+import { createDefaultAsymmetricLoadData } from '../nodes/asymmetric_load/defaults';
+import type { AsymmetricLoadData } from '../nodes/asymmetric_load/types';
+
+import { AsymmetricSGenConfigForm } from '../nodes/asymmetric_sgen/AsymmetricSGenConfigForm';
+import { createDefaultAsymmetricSGenData } from '../nodes/asymmetric_sgen/defaults';
+import type { AsymmetricSGenData } from '../nodes/asymmetric_sgen/types';
+
+import { ImpedanceConfigForm } from '../nodes/impedance/ImpedanceConfigForm';
+import { createDefaultImpedanceData } from '../nodes/impedance/defaults';
+import type { ImpedanceData } from '../nodes/impedance/types';
+
+import { WardConfigForm } from '../nodes/ward/WardConfigForm';
+import { createDefaultWardData } from '../nodes/ward/defaults';
+import type { WardData } from '../nodes/ward/types';
+
+import { XWardConfigForm } from '../nodes/xward/XWardConfigForm';
+import { createDefaultXWardData } from '../nodes/xward/defaults';
+import type { XWardData } from '../nodes/xward/types';
+
+import { MeasurementConfigForm } from '../nodes/measurement/MeasurementConfigForm';
+import { createDefaultMeasurementData } from '../nodes/measurement/defaults';
+import type { MeasurementData } from '../nodes/measurement/types';
+
+import { HvdcLinkConfigForm } from '../nodes/hvdc_link/HvdcLinkConfigForm';
+import { createDefaultHvdcLinkData } from '../nodes/hvdc_link/defaults';
+import type { HvdcLinkData } from '../nodes/hvdc_link/types';
+
 type RightInspectorProps = {
   selectionNode?: Node;
   selectionEdge?: Edge;
@@ -246,6 +274,62 @@ export const RightInspector = ({
                       key={selectionNode.id}
                       value={(selectionNode.data as DcSourceData) ?? createDefaultDcSourceData()}
                       onSubmit={updateNode as (v: DcSourceData) => void}
+                    />
+                  );
+                case 'asymmetric_load':
+                  return (
+                    <AsymmetricLoadConfigForm
+                      key={selectionNode.id}
+                      value={(selectionNode.data as AsymmetricLoadData) ?? createDefaultAsymmetricLoadData()}
+                      onSubmit={updateNode as (v: AsymmetricLoadData) => void}
+                    />
+                  );
+                case 'asymmetric_sgen':
+                  return (
+                    <AsymmetricSGenConfigForm
+                      key={selectionNode.id}
+                      value={(selectionNode.data as AsymmetricSGenData) ?? createDefaultAsymmetricSGenData()}
+                      onSubmit={updateNode as (v: AsymmetricSGenData) => void}
+                    />
+                  );
+                case 'impedance':
+                  return (
+                    <ImpedanceConfigForm
+                      key={selectionNode.id}
+                      value={(selectionNode.data as ImpedanceData) ?? createDefaultImpedanceData()}
+                      onSubmit={updateNode as (v: ImpedanceData) => void}
+                    />
+                  );
+                case 'ward':
+                  return (
+                    <WardConfigForm
+                      key={selectionNode.id}
+                      value={(selectionNode.data as WardData) ?? createDefaultWardData()}
+                      onSubmit={updateNode as (v: WardData) => void}
+                    />
+                  );
+                case 'xward':
+                  return (
+                    <XWardConfigForm
+                      key={selectionNode.id}
+                      value={(selectionNode.data as XWardData) ?? createDefaultXWardData()}
+                      onSubmit={updateNode as (v: XWardData) => void}
+                    />
+                  );
+                case 'measurement':
+                  return (
+                    <MeasurementConfigForm
+                      key={selectionNode.id}
+                      value={(selectionNode.data as MeasurementData) ?? createDefaultMeasurementData()}
+                      onSubmit={updateNode as (v: MeasurementData) => void}
+                    />
+                  );
+                case 'hvdc_link':
+                  return (
+                    <HvdcLinkConfigForm
+                      key={selectionNode.id}
+                      value={(selectionNode.data as HvdcLinkData) ?? createDefaultHvdcLinkData()}
+                      onSubmit={updateNode as (v: HvdcLinkData) => void}
                     />
                   );
                 default:

@@ -60,7 +60,7 @@ export const EditorPage = () => {
       message.error({
         content: `Mô phỏng thất bại: ${errorMessage}`,
         key: 'sim',
-        duration: 6,
+        duration: 4,
       });
     },
   });

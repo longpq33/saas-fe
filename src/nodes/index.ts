@@ -14,6 +14,13 @@ import { dcBusPrototype } from './dc_bus/prototype';
 import { dcLinePrototype } from './dcline/prototype';
 import { dcLoadPrototype } from './dc_load/prototype';
 import { dcSourcePrototype } from './dc_source/prototype';
+import { asymmetricLoadPrototype } from './asymmetric_load/prototype';
+import { asymmetricSGenPrototype } from './asymmetric_sgen/prototype';
+import { impedancePrototype } from './impedance/prototype';
+import { wardPrototype } from './ward/prototype';
+import { xwardPrototype } from './xward/prototype';
+import { measurementPrototype } from './measurement/prototype';
+import { hvdcLinkPrototype } from './hvdc_link/prototype';
 
 export const NODE_PROTOTYPES = [
   busPrototype,
@@ -32,6 +39,13 @@ export const NODE_PROTOTYPES = [
   dcLinePrototype,
   dcLoadPrototype,
   dcSourcePrototype,
+  asymmetricLoadPrototype,
+  asymmetricSGenPrototype,
+  impedancePrototype,
+  wardPrototype,
+  xwardPrototype,
+  measurementPrototype,
+  hvdcLinkPrototype,
 ] as const;
 
 export type PaletteItem = {
@@ -53,6 +67,7 @@ const CATEGORY_TRANSFORMERS = 'transformers';
 const CATEGORY_SHUNTS = 'shunts';
 const CATEGORY_STORAGE = 'storage';
 const CATEGORY_DC = 'dc';
+const CATEGORY_SPECIAL = 'special';
 
 const getCategoryForNode = (nodeType: string): string => {
   const categoryMap: Record<string, string> = {
@@ -72,6 +87,13 @@ const getCategoryForNode = (nodeType: string): string => {
     dcline: CATEGORY_DC,
     dc_load: CATEGORY_DC,
     dc_source: CATEGORY_DC,
+    asymmetric_load: CATEGORY_SPECIAL,
+    asymmetric_sgen: CATEGORY_SPECIAL,
+    impedance: CATEGORY_SPECIAL,
+    ward: CATEGORY_SPECIAL,
+    xward: CATEGORY_SPECIAL,
+    measurement: CATEGORY_SPECIAL,
+    hvdc_link: CATEGORY_SPECIAL,
   };
   return categoryMap[nodeType] || CATEGORY_NETWORK;
 };
@@ -102,6 +124,7 @@ export const getPaletteGroups = (): PaletteGroup[] => {
     { key: CATEGORY_SHUNTS, label: 'Shunts' },
     { key: CATEGORY_STORAGE, label: 'Storage' },
     { key: CATEGORY_DC, label: 'DC' },
+    { key: CATEGORY_SPECIAL, label: 'Special' },
   ];
 
   return groupDefinitions
