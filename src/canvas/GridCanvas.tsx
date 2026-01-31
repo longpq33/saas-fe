@@ -33,6 +33,10 @@ import { createDefaultStorageData } from '../nodes/storage/defaults';
 import { StorageNode } from '../nodes/storage/StorageNode';
 import { createDefaultTrafo3WData } from '../nodes/trafo3w/defaults';
 import { Trafo3WNode } from '../nodes/trafo3w/Trafo3WNode';
+import { DcBusNode } from '../nodes/dc_bus/DcBusNode';
+import { DcLineNode } from '../nodes/dcline/DcLineNode';
+import { DcLoadNode } from '../nodes/dc_load/DcLoadNode';
+import { DcSourceNode } from '../nodes/dc_source/DcSourceNode';
 import { createDefaultLineEdgeData } from '../edges/line/defaults';
 import 'reactflow/dist/style.css';
 import styled from 'styled-components';
@@ -72,6 +76,10 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
       shunt: ShuntNode,
       storage: StorageNode,
       trafo3w: Trafo3WNode,
+      dc_bus: DcBusNode,
+      dcline: DcLineNode,
+      dc_load: DcLoadNode,
+      dc_source: DcSourceNode,
     }),
     [],
   );
@@ -88,7 +96,21 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
       const removedEdgeIds = changes.filter((c) => c.type === 'remove').map((c) => c.id);
       const removedEdges = removedEdgeIds.length ? edges.filter((e) => removedEdgeIds.includes(e.id)) : [];
 
-      const attachTypes = new Set(['ext_grid', 'load', 'gen', 'sgen', 'motor', 'shunt', 'storage', 'switch', 'line']);
+      const attachTypes = new Set([
+        'ext_grid',
+        'load',
+        'gen',
+        'sgen',
+        'motor',
+        'shunt',
+        'storage',
+        'switch',
+        'line',
+        'dc_bus',
+        'dcline',
+        'dc_load',
+        'dc_source',
+      ]);
 
       // For each removed attach edge, clear binding fields on the node if it no longer
       // has any remaining attach edge connected to a bus.
@@ -157,7 +179,7 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
       const targetNode = nodes.find((n) => n.id === target);
       if (!sourceNode || !targetNode) return;
 
-      const isBus = (n: Node) => n.type === 'bus';
+      const isBus = (n: Node) => n.type === 'bus' || n.type === 'dc_bus';
 
       const sourceHandle = (params as Connection).sourceHandle ?? (params as Edge).sourceHandle;
       const targetHandle = (params as Connection).targetHandle ?? (params as Edge).targetHandle;
@@ -169,9 +191,11 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
         n.type === 'ext_grid' ||
         n.type === 'motor' ||
         n.type === 'shunt' ||
-        n.type === 'storage';
+        n.type === 'storage' ||
+        n.type === 'dc_load' ||
+        n.type === 'dc_source';
 
-      const isLineNode = (n: Node) => n.type === 'line';
+      const isLineNode = (n: Node) => n.type === 'line' || n.type === 'dcline';
 
       // Edge kinds
       // - attach: UI connection + binding. Topology is stored in node.data (e.g., line.fromBusId/toBusId)
@@ -195,6 +219,23 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
         }
       };
 
+      // AC bus <-> dcline (attach + bind from/to)
+      const bindBusToDcLine = (bus: Node, dcline: Node, handleId?: string | null) => {
+        if (handleId === 'from') {
+          onUpdateNodes(
+            nodes.map((n) =>
+              n.id === dcline.id ? { ...n, data: { ...(n.data as Record<string, unknown>), fromBusId: bus.id } } : n,
+            ),
+          );
+        } else if (handleId === 'to') {
+          onUpdateNodes(
+            nodes.map((n) =>
+              n.id === dcline.id ? { ...n, data: { ...(n.data as Record<string, unknown>), toBusId: bus.id } } : n,
+            ),
+          );
+        }
+      };
+
       // Decide edge kind but never block creating an edge
       const mkEdgeData = (): Record<string, unknown> => {
         // bus <-> bus => line
@@ -207,9 +248,30 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
           return { kind: 'attach', attach_type: 'ext_grid' };
         }
 
+        // dc_source -> dc_bus => attach dc_source (one-way by convention)
+        if (sourceNode.type === 'dc_source' && targetNode.type === 'dc_bus') {
+          return { kind: 'attach', attach_type: 'dc_source' };
+        }
+
         // bus <-> line-node => attach line
         if ((isBus(sourceNode) && isLineNode(targetNode)) || (isBus(targetNode) && isLineNode(sourceNode))) {
           return { kind: 'attach', attach_type: 'line' };
+        }
+
+        // AC bus <-> dcline => attach dcline (DC line connects AC buses)
+        if (
+          (sourceNode.type === 'bus' && targetNode.type === 'dcline') ||
+          (targetNode.type === 'bus' && sourceNode.type === 'dcline')
+        ) {
+          return { kind: 'attach', attach_type: 'dcline' };
+        }
+
+        // dc_bus <-> dc_load/dc_source => attach <type>
+        if (
+          (sourceNode.type === 'dc_bus' && (targetNode.type === 'dc_load' || targetNode.type === 'dc_source')) ||
+          (targetNode.type === 'dc_bus' && (sourceNode.type === 'dc_load' || sourceNode.type === 'dc_source'))
+        ) {
+          return { kind: 'attach', attach_type: targetNode.type === 'dc_bus' ? sourceNode.type : targetNode.type };
         }
 
         // bus <-> bus-bound equipment => attach <type>
@@ -236,9 +298,17 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
 
       // Lightweight auto-bind (do not block edge creation)
       if (isBus(sourceNode) && isLineNode(targetNode)) {
-        bindBusToLine(sourceNode, targetNode, targetHandle);
+        if (targetNode.type === 'dcline') {
+          bindBusToDcLine(sourceNode, targetNode, targetHandle);
+        } else {
+          bindBusToLine(sourceNode, targetNode, targetHandle);
+        }
       } else if (isBus(targetNode) && isLineNode(sourceNode)) {
-        bindBusToLine(targetNode, sourceNode, sourceHandle);
+        if (sourceNode.type === 'dcline') {
+          bindBusToDcLine(targetNode, sourceNode, sourceHandle);
+        } else {
+          bindBusToLine(targetNode, sourceNode, sourceHandle);
+        }
       }
 
       const isSwitch = (n: Node) => n.type === 'switch';

@@ -10,6 +10,10 @@ import { motorPrototype } from './motor/prototype';
 import { shuntPrototype } from './shunt/prototype';
 import { storagePrototype } from './storage/prototype';
 import { trafo3wPrototype } from './trafo3w/prototype';
+import { dcBusPrototype } from './dc_bus/prototype';
+import { dcLinePrototype } from './dcline/prototype';
+import { dcLoadPrototype } from './dc_load/prototype';
+import { dcSourcePrototype } from './dc_source/prototype';
 
 export const NODE_PROTOTYPES = [
   busPrototype,
@@ -24,6 +28,10 @@ export const NODE_PROTOTYPES = [
   shuntPrototype,
   storagePrototype,
   trafo3wPrototype,
+  dcBusPrototype,
+  dcLinePrototype,
+  dcLoadPrototype,
+  dcSourcePrototype,
 ] as const;
 
 export type PaletteItem = {
@@ -44,6 +52,7 @@ const CATEGORY_LOADS = 'loads';
 const CATEGORY_TRANSFORMERS = 'transformers';
 const CATEGORY_SHUNTS = 'shunts';
 const CATEGORY_STORAGE = 'storage';
+const CATEGORY_DC = 'dc';
 
 const getCategoryForNode = (nodeType: string): string => {
   const categoryMap: Record<string, string> = {
@@ -59,6 +68,10 @@ const getCategoryForNode = (nodeType: string): string => {
     trafo3w: CATEGORY_TRANSFORMERS,
     shunt: CATEGORY_SHUNTS,
     storage: CATEGORY_STORAGE,
+    dc_bus: CATEGORY_DC,
+    dcline: CATEGORY_DC,
+    dc_load: CATEGORY_DC,
+    dc_source: CATEGORY_DC,
   };
   return categoryMap[nodeType] || CATEGORY_NETWORK;
 };
@@ -88,6 +101,7 @@ export const getPaletteGroups = (): PaletteGroup[] => {
     { key: CATEGORY_TRANSFORMERS, label: 'Transformers' },
     { key: CATEGORY_SHUNTS, label: 'Shunts' },
     { key: CATEGORY_STORAGE, label: 'Storage' },
+    { key: CATEGORY_DC, label: 'DC' },
   ];
 
   return groupDefinitions

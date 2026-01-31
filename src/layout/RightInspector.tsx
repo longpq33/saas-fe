@@ -53,6 +53,22 @@ import { Trafo3WConfigForm } from '../nodes/trafo3w/Trafo3WConfigForm';
 import { createDefaultTrafo3WData } from '../nodes/trafo3w/defaults';
 import type { Trafo3WData } from '../nodes/trafo3w/types';
 
+import { DcBusConfigForm } from '../nodes/dc_bus/DcBusConfigForm';
+import { createDefaultDcBusData } from '../nodes/dc_bus/defaults';
+import type { DcBusData } from '../nodes/dc_bus/types';
+
+import { DcLineConfigForm } from '../nodes/dcline/DcLineConfigForm';
+import { createDefaultDcLineData } from '../nodes/dcline/defaults';
+import type { DcLineData } from '../nodes/dcline/types';
+
+import { DcLoadConfigForm } from '../nodes/dc_load/DcLoadConfigForm';
+import { createDefaultDcLoadData } from '../nodes/dc_load/defaults';
+import type { DcLoadData } from '../nodes/dc_load/types';
+
+import { DcSourceConfigForm } from '../nodes/dc_source/DcSourceConfigForm';
+import { createDefaultDcSourceData } from '../nodes/dc_source/defaults';
+import type { DcSourceData } from '../nodes/dc_source/types';
+
 type RightInspectorProps = {
   selectionNode?: Node;
   selectionEdge?: Edge;
@@ -198,6 +214,38 @@ export const RightInspector = ({
                       key={selectionNode.id}
                       value={(selectionNode.data as Trafo3WData) ?? createDefaultTrafo3WData()}
                       onSubmit={updateNode as (v: Trafo3WData) => void}
+                    />
+                  );
+                case 'dc_bus':
+                  return (
+                    <DcBusConfigForm
+                      key={selectionNode.id}
+                      value={(selectionNode.data as DcBusData) ?? createDefaultDcBusData()}
+                      onSubmit={updateNode as (v: DcBusData) => void}
+                    />
+                  );
+                case 'dcline':
+                  return (
+                    <DcLineConfigForm
+                      key={selectionNode.id}
+                      value={(selectionNode.data as DcLineData) ?? createDefaultDcLineData()}
+                      onSubmit={updateNode as (v: DcLineData) => void}
+                    />
+                  );
+                case 'dc_load':
+                  return (
+                    <DcLoadConfigForm
+                      key={selectionNode.id}
+                      value={(selectionNode.data as DcLoadData) ?? createDefaultDcLoadData()}
+                      onSubmit={updateNode as (v: DcLoadData) => void}
+                    />
+                  );
+                case 'dc_source':
+                  return (
+                    <DcSourceConfigForm
+                      key={selectionNode.id}
+                      value={(selectionNode.data as DcSourceData) ?? createDefaultDcSourceData()}
+                      onSubmit={updateNode as (v: DcSourceData) => void}
                     />
                   );
                 default:
