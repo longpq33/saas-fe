@@ -281,12 +281,12 @@ export const MapView = ({ nodes, edges, response }: ViewMapControlProps) => {
 
   // Overloaded lines (by name) based on simulation results
   const overloadedLineNames = useMemo(
-    () => buildOverloadedLineNameSet(response, 100),
+    () => buildOverloadedLineNameSet(response ?? undefined, 100),
     [response]
   );
 
   const lineLoadingByName = useMemo(
-    () => buildLineLoadingByName(response),
+    () => buildLineLoadingByName(response ?? undefined),
     [response]
   );
 
@@ -533,7 +533,6 @@ export const MapView = ({ nodes, edges, response }: ViewMapControlProps) => {
         {/* Render other nodes as markers */}
         {nodesWithGeodata.map((node) => {
           const icon = getNodeIcon(node.type);
-          const busName = node.bus?.name;
           const nodeContent = (
             <div>
               <strong>{node.name}</strong>

@@ -21,10 +21,12 @@ export const TopBar = ({
   edges,
   response,
 }: TopBarProps) => {
+  const hasNodes = nodes && nodes.length > 0;
+
   return (
     <Flex justify="center" align="center" style={{ padding: '8px 12px', background: '#024A70', borderBottom: '1px solid #1f2937', gap: 10 }}>
       <Space>
-        <ViewMapControl nodes={nodes} edges={edges} response={response} />
+        <ViewMapControl nodes={nodes} edges={edges} response={response} disabled={!hasNodes} />
       </Space>
       <Space>
         <Tooltip title="Tạo mới">
@@ -34,20 +36,19 @@ export const TopBar = ({
         </Tooltip>
       </Space>
       <Space>
-        <Tooltip title="Chạy mô phỏng">
+        <Tooltip title={hasNodes ? 'Chạy mô phỏng' : 'Không có dữ liệu để mô phỏng'}>
           <Button
             style={{ background: '#2D9966', height: 40 }}
             type="primary"
             icon={<PlayCircleOutlined />}
-            onClick={onRun}
-            disabled={isSimulating}
+            onClick={hasNodes ? onRun : undefined}
+            disabled={isSimulating || !hasNodes}
             loading={isSimulating}
           >
             Run
           </Button>
         </Tooltip>
       </Space>
-     
     </Flex>
   );
 };

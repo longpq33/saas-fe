@@ -11,9 +11,10 @@ export type ViewMapControlProps = {
   nodes: Node[];
   edges: Edge[];
   response?: SimulateResponse | null;
+  disabled?: boolean;
 };
 
-export const ViewMapControl = ({ nodes, edges, response }: ViewMapControlProps) => {
+export const ViewMapControl = ({ nodes, edges, response, disabled }: ViewMapControlProps) => {
   const [open, setOpen] = useState(false);
   const [mapKey, setMapKey] = useState(0);
 
@@ -26,12 +27,13 @@ export const ViewMapControl = ({ nodes, edges, response }: ViewMapControlProps) 
 
   return (
     <>
-      <Tooltip title="Xem bản đồ">
+      <Tooltip title={disabled ? 'Không có dữ liệu để xem bản đồ' : 'Xem bản đồ'}>
         <Button
           style={{ background: '#BB4D1A', height: 40, borderColor: '#1f2937' }}
           type="primary"
           icon={<GlobalOutlined />}
-          onClick={handleOpen}
+          onClick={disabled ? undefined : handleOpen}
+          disabled={disabled}
         >
           View map
         </Button>
