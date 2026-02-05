@@ -44,7 +44,14 @@ import { WardNode } from '../nodes/ward/WardNode';
 import { XWardNode } from '../nodes/xward/XWardNode';
 import { MeasurementNode } from '../nodes/measurement/MeasurementNode';
 import { HvdcLinkNode } from '../nodes/hvdc_link/HvdcLinkNode';
-import { createDefaultLineEdgeData } from '../edges/line/defaults';
+import { createEdgeData } from './edgeCreationStrategies';
+import {
+  extractConnectionParams,
+  handleBusToLineAutoBind,
+  handleBusToEquipmentAutoBind,
+  handleSwitchAutoBind,
+  handleTrafo3WAutoBind,
+} from './autoBindHandlers';
 import 'reactflow/dist/style.css';
 import styled from 'styled-components';
 
@@ -192,297 +199,26 @@ const GridCanvasInner = ({ nodes, edges, onUpdateNodes, onUpdateEdges, onSelect 
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
-      const source = (params as Connection).source ?? (params as Edge).source;
-      const target = (params as Connection).target ?? (params as Edge).target;
-      if (!source || !target) return;
-
-      const sourceNode = nodes.find((n) => n.id === source);
-      const targetNode = nodes.find((n) => n.id === target);
+      const { sourceNode, targetNode, sourceHandle, targetHandle } = extractConnectionParams(params, nodes);
       if (!sourceNode || !targetNode) return;
 
-      const isBus = (n: Node) => n.type === 'bus' || n.type === 'dc_bus';
-
-      const sourceHandle = (params as Connection).sourceHandle ?? (params as Edge).sourceHandle;
-      const targetHandle = (params as Connection).targetHandle ?? (params as Edge).targetHandle;
-
-      const isBusBound = (n: Node) =>
-        n.type === 'load' ||
-        n.type === 'gen' ||
-        n.type === 'sgen' ||
-        n.type === 'ext_grid' ||
-        n.type === 'motor' ||
-        n.type === 'shunt' ||
-        n.type === 'storage' ||
-        n.type === 'dc_load' ||
-        n.type === 'dc_source' ||
-        n.type === 'asymmetric_load' ||
-        n.type === 'asymmetric_sgen' ||
-        n.type === 'ward' ||
-        n.type === 'xward';
-
-      const isLineNode = (n: Node) => n.type === 'line' || n.type === 'dcline' || n.type === 'impedance' || n.type === 'hvdc_link';
-
-      // Edge kinds
-      // - attach: UI connection + binding. Topology is stored in node.data (e.g., line.fromBusId/toBusId)
-      // - attach(ext_grid): ext_grid -> bus (special, keep one-way)
-      // NOTE: Legacy bus<->bus "line" edge creation is disabled (use Line node instead).
-
-      // bus <-> line (attach + bind from/to)
-      const bindBusToLine = (bus: Node, line: Node, handleId?: string | null) => {
-        if (handleId === 'from') {
-          onUpdateNodes(
-            nodes.map((n) =>
-              n.id === line.id ? { ...n, data: { ...(n.data as Record<string, unknown>), fromBusId: bus.id } } : n,
-            ),
-          );
-        } else if (handleId === 'to') {
-          onUpdateNodes(
-            nodes.map((n) =>
-              n.id === line.id ? { ...n, data: { ...(n.data as Record<string, unknown>), toBusId: bus.id } } : n,
-            ),
-          );
-        }
-      };
-
-      // AC bus <-> dcline/impedance/hvdc_link (attach + bind from/to)
-      const bindBusToDcLine = (bus: Node, dcline: Node, handleId?: string | null) => {
-        if (handleId === 'from') {
-          onUpdateNodes(
-            nodes.map((n) =>
-              n.id === dcline.id ? { ...n, data: { ...(n.data as Record<string, unknown>), fromBusId: bus.id } } : n,
-            ),
-          );
-        } else if (handleId === 'to') {
-          onUpdateNodes(
-            nodes.map((n) =>
-              n.id === dcline.id ? { ...n, data: { ...(n.data as Record<string, unknown>), toBusId: bus.id } } : n,
-            ),
-          );
-        }
-      };
-
-      // Decide edge kind but never block creating an edge
-      const mkEdgeData = (): Record<string, unknown> => {
-        // bus <-> bus => line
-        if (isBus(sourceNode) && isBus(targetNode)) {
-          return { ...createDefaultLineEdgeData(), kind: 'line' };
-        }
-
-        // ext_grid -> bus => attach ext_grid (one-way by convention)
-        if (sourceNode.type === 'ext_grid' && isBus(targetNode)) {
-          return { kind: 'attach', attach_type: 'ext_grid' };
-        }
-
-        // dc_source -> dc_bus => attach dc_source (one-way by convention)
-        if (sourceNode.type === 'dc_source' && targetNode.type === 'dc_bus') {
-          return { kind: 'attach', attach_type: 'dc_source' };
-        }
-
-        // bus <-> line-node => attach line
-        if ((isBus(sourceNode) && isLineNode(targetNode)) || (isBus(targetNode) && isLineNode(sourceNode))) {
-          return { kind: 'attach', attach_type: 'line' };
-        }
-
-        // AC bus <-> dcline/impedance/hvdc_link => attach (connects AC buses)
-        if (
-          (sourceNode.type === 'bus' && (targetNode.type === 'dcline' || targetNode.type === 'impedance' || targetNode.type === 'hvdc_link')) ||
-          (targetNode.type === 'bus' && (sourceNode.type === 'dcline' || sourceNode.type === 'impedance' || sourceNode.type === 'hvdc_link'))
-        ) {
-          return { kind: 'attach', attach_type: targetNode.type === 'bus' ? sourceNode.type : targetNode.type };
-        }
-
-        // dc_bus <-> dc_load/dc_source => attach <type>
-        if (
-          (sourceNode.type === 'dc_bus' && (targetNode.type === 'dc_load' || targetNode.type === 'dc_source')) ||
-          (targetNode.type === 'dc_bus' && (sourceNode.type === 'dc_load' || sourceNode.type === 'dc_source'))
-        ) {
-          return { kind: 'attach', attach_type: targetNode.type === 'dc_bus' ? sourceNode.type : targetNode.type };
-        }
-
-        // bus <-> bus-bound equipment => attach <type>
-        if (isBus(sourceNode) && isBusBound(targetNode)) {
-          return { kind: 'attach', attach_type: targetNode.type };
-        }
-        if (isBus(targetNode) && isBusBound(sourceNode)) {
-          return { kind: 'attach', attach_type: sourceNode.type };
-        }
-
-        // default: UI edge
-        return { kind: 'ui' };
-      };
-
+      // Create edge using strategy pattern
+      const edgeData = createEdgeData(sourceNode, targetNode);
       const nextEdges = addEdge(
         {
           ...params,
           animated: false,
-          data: mkEdgeData(),
+          data: edgeData,
         },
         edges,
       );
       onUpdateEdges(nextEdges);
 
-      // Lightweight auto-bind (do not block edge creation)
-      if (isBus(sourceNode) && isLineNode(targetNode)) {
-        if (targetNode.type === 'dcline' || targetNode.type === 'impedance' || targetNode.type === 'hvdc_link') {
-          bindBusToDcLine(sourceNode, targetNode, targetHandle);
-        } else {
-          bindBusToLine(sourceNode, targetNode, targetHandle);
-        }
-      } else if (isBus(targetNode) && isLineNode(sourceNode)) {
-        if (sourceNode.type === 'dcline' || sourceNode.type === 'impedance' || sourceNode.type === 'hvdc_link') {
-          bindBusToDcLine(targetNode, sourceNode, sourceHandle);
-        } else {
-          bindBusToLine(targetNode, sourceNode, sourceHandle);
-        }
-      }
-
-      const isSwitch = (n: Node) => n.type === 'switch';
-      const isElement = (n: Node) => n.type === 'transformer' || n.type === 'bus';
-      const isTrafo3W = (n: Node) => n.type === 'trafo3w';
-
-      // Auto-bind busId for load/gen/sgen/ext_grid
-      let busId: string | undefined;
-      let otherId: string | undefined;
-
-      if (isBus(sourceNode) && isBusBound(targetNode)) {
-        busId = sourceNode.id;
-        otherId = targetNode.id;
-      } else if (isBus(targetNode) && isBusBound(sourceNode)) {
-        busId = targetNode.id;
-        otherId = sourceNode.id;
-      }
-
-      if (busId && otherId) {
-        onUpdateNodes(
-          nodes.map((n) => {
-            if (n.id !== otherId) return n;
-            return { ...n, data: { ...(n.data as Record<string, unknown>), busId } };
-          }),
-        );
-      }
-
-      // bus <-> switch (attach + bind busId)
-      if (isBus(sourceNode) && isSwitch(targetNode) && targetHandle === 'bus') {
-        const nextEdges = addEdge(
-          {
-            ...params,
-            animated: false,
-            data: { kind: 'attach', attach_type: 'switch' },
-          },
-          edges,
-        );
-        onUpdateEdges(nextEdges);
-
-        onUpdateNodes(
-          nodes.map((n) => {
-            if (n.id !== targetNode.id) return n;
-            return { ...n, data: { ...(n.data as Record<string, unknown>), busId: sourceNode.id } };
-          }),
-        );
-      } else if (isBus(targetNode) && isSwitch(sourceNode) && sourceHandle === 'bus') {
-        const nextEdges = addEdge(
-          {
-            ...params,
-            animated: false,
-            data: { kind: 'attach', attach_type: 'switch' },
-          },
-          edges,
-        );
-        onUpdateEdges(nextEdges);
-
-        onUpdateNodes(
-          nodes.map((n) => {
-            if (n.id !== sourceNode.id) return n;
-            return { ...n, data: { ...(n.data as Record<string, unknown>), busId: targetNode.id } };
-          }),
-        );
-      }
-
-
-      // Auto-bind elementId + elementType for switch (switch -> element via "element" handle)
-      // NOTE: In this app, "line" is a ReactFlow EDGE, not a NODE.
-      // So we can only auto-bind to transformer/bus nodes here. Binding a switch to a line-edge
-      // must be done using the currently selected edge (handled outside this onConnect flow).
-      if (isSwitch(sourceNode) && isElement(targetNode) && sourceHandle === 'element') {
-        const elementType = targetNode.type === 'transformer' ? 'trafo' : 'bus';
-        onUpdateNodes(
-          nodes.map((n) => {
-            if (n.id !== sourceNode.id) return n;
-            return {
-              ...n,
-              data: {
-                ...(n.data as Record<string, unknown>),
-                elementId: targetNode.id,
-                elementType,
-              },
-            };
-          }),
-        );
-      } else if (isSwitch(targetNode) && isElement(sourceNode) && targetHandle === 'element') {
-        const elementType = sourceNode.type === 'transformer' ? 'trafo' : 'bus';
-        onUpdateNodes(
-          nodes.map((n) => {
-            if (n.id !== targetNode.id) return n;
-            return {
-              ...n,
-              data: {
-                ...(n.data as Record<string, unknown>),
-                elementId: sourceNode.id,
-                elementType,
-              },
-            };
-          }),
-        );
-      }
-
-      // Auto-bind hvBusId/mvBusId/lvBusId for trafo3w
-      if (isBus(sourceNode) && isTrafo3W(targetNode)) {
-        if (targetHandle?.startsWith('hv_')) {
-          onUpdateNodes(
-            nodes.map((n) => {
-              if (n.id !== targetNode.id) return n;
-              return { ...n, data: { ...(n.data as Record<string, unknown>), hvBusId: sourceNode.id } };
-            }),
-          );
-        } else if (targetHandle?.startsWith('mv_')) {
-          onUpdateNodes(
-            nodes.map((n) => {
-              if (n.id !== targetNode.id) return n;
-              return { ...n, data: { ...(n.data as Record<string, unknown>), mvBusId: sourceNode.id } };
-            }),
-          );
-        } else if (targetHandle?.startsWith('lv_')) {
-          onUpdateNodes(
-            nodes.map((n) => {
-              if (n.id !== targetNode.id) return n;
-              return { ...n, data: { ...(n.data as Record<string, unknown>), lvBusId: sourceNode.id } };
-            }),
-          );
-        }
-      } else if (isBus(targetNode) && isTrafo3W(sourceNode)) {
-        if (sourceHandle?.startsWith('hv_')) {
-          onUpdateNodes(
-            nodes.map((n) => {
-              if (n.id !== sourceNode.id) return n;
-              return { ...n, data: { ...(n.data as Record<string, unknown>), hvBusId: targetNode.id } };
-            }),
-          );
-        } else if (sourceHandle?.startsWith('mv_')) {
-          onUpdateNodes(
-            nodes.map((n) => {
-              if (n.id !== sourceNode.id) return n;
-              return { ...n, data: { ...(n.data as Record<string, unknown>), mvBusId: targetNode.id } };
-            }),
-          );
-        } else if (sourceHandle?.startsWith('lv_')) {
-          onUpdateNodes(
-            nodes.map((n) => {
-              if (n.id !== sourceNode.id) return n;
-              return { ...n, data: { ...(n.data as Record<string, unknown>), lvBusId: targetNode.id } };
-            }),
-          );
-        }
-      }
+      // Auto-bind handlers (lightweight, do not block edge creation)
+      handleBusToLineAutoBind(sourceNode, targetNode, sourceHandle, targetHandle, nodes, onUpdateNodes);
+      handleBusToEquipmentAutoBind(sourceNode, targetNode, nodes, onUpdateNodes);
+      handleSwitchAutoBind(sourceNode, targetNode, sourceHandle, targetHandle, params, edges, nodes, onUpdateEdges, onUpdateNodes);
+      handleTrafo3WAutoBind(sourceNode, targetNode, sourceHandle, targetHandle, nodes, onUpdateNodes);
     },
     [edges, nodes, onUpdateEdges, onUpdateNodes],
   );

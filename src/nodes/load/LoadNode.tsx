@@ -2,10 +2,10 @@ import { Handle, Position } from 'reactflow';
 import styled from 'styled-components';
 
 import type { LoadData } from './types';
+import { Head, NodeContent } from '../asymmetric_load/AsymmetricLoadNode';
 
 const Wrapper = styled.div`
   min-width: 60px;
-  padding: 8px 10px;
   background: #024A70;
   border: 1px solid #374151;
   border-radius: 10px;
@@ -36,10 +36,13 @@ export const LoadNode = ({ data }: LoadNodeProps) => {
   return (
     <Wrapper>
       <Handle type="target" position={Position.Top} style={{ background: '#60a5fa', border: 0 }} />
-      <Title>{data?.name || 'Load'}</Title>
-      <Subtitle>
-        {p} MW / {q} MVAr
-      </Subtitle>
+      <Head>Load</Head>
+      <NodeContent>
+        <Title>{data?.name || 'Load'}</Title>
+        <Subtitle>
+          {p} MW / {q} MVAr
+        </Subtitle>
+      </NodeContent>
       <Handle type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
     </Wrapper>
   );

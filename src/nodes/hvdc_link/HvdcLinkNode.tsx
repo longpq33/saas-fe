@@ -2,10 +2,10 @@ import { Handle, Position } from 'reactflow';
 import styled from 'styled-components';
 
 import type { HvdcLinkData } from './types';
+import { Head, NodeContent } from '../asymmetric_load/AsymmetricLoadNode';
 
 const Wrapper = styled.div`
   min-width: 120px;
-  padding: 8px 10px;
   background: #EF4444;
   border: 1px solid #f87171;
   border-radius: 10px;
@@ -36,12 +36,14 @@ export const HvdcLinkNode = ({ data }: HvdcLinkNodeProps) => {
     <Wrapper>
       <Handle id="from" type="target" position={Position.Left} style={{ top: '35%', background: '#60a5fa', border: 0 }} />
       <Handle id="to" type="source" position={Position.Right} style={{ top: '35%', background: '#34d399', border: 0 }} />
-
-      <Title>{data?.name || 'HV DC Link'}</Title>
-      <Subtitle>
-        {data?.fromBusId || 'from?'} → {data?.toBusId || 'to?'}
-      </Subtitle>
-      <Subtitle>{p} MW</Subtitle>
+      <Head>HV DC Link</Head>
+      <NodeContent>
+        <Title>{data?.name || 'HV DC Link'}</Title>
+        <Subtitle>
+          {data?.fromBusId || 'from?'} → {data?.toBusId || 'to?'}
+        </Subtitle>
+        <Subtitle>{p} MW</Subtitle>
+      </NodeContent>
     </Wrapper>
   );
 };

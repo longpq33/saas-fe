@@ -2,10 +2,10 @@ import { Handle, Position } from 'reactflow';
 import styled from 'styled-components';
 
 import type { MeasurementData } from './types';
+import { Head, NodeContent } from '../asymmetric_load/AsymmetricLoadNode';
 
 const Wrapper = styled.div`
   min-width: 100px;
-  padding: 8px 10px;
   background: #FBBF24;
   border: 1px solid #fcd34d;
   border-radius: 10px;
@@ -37,11 +37,14 @@ export const MeasurementNode = ({ data }: MeasurementNodeProps) => {
   return (
     <Wrapper>
       <Handle type="target" position={Position.Top} style={{ background: '#60a5fa', border: 0 }} />
-      <Title>{data?.name || 'Measurement'}</Title>
-      <Subtitle>
-        {measureType.toUpperCase()} on {elementType}
-      </Subtitle>
-      <Subtitle>Element: {element}</Subtitle>
+      <Head>Measurement</Head>
+      <NodeContent>
+        <Title>{data?.name || 'Measurement'}</Title>
+        <Subtitle>
+          {measureType.toUpperCase()} on {elementType}
+        </Subtitle>
+        <Subtitle>Element: {element}</Subtitle>
+      </NodeContent>
       <Handle type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
     </Wrapper>
   );

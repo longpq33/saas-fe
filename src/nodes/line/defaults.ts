@@ -19,5 +19,6 @@ export const createDefaultLineData = (): LineData => ({
     side: 'source',
     z_ohm: 0,
   },
+  geodata: undefined, // Optional: array of {lat, long} points
 });
 

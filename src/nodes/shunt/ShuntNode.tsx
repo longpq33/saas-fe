@@ -2,10 +2,10 @@ import { Handle, Position } from 'reactflow';
 import styled from 'styled-components';
 
 import type { ShuntData } from './types';
+import { Head, NodeContent } from '../asymmetric_load/AsymmetricLoadNode';
 
 const Wrapper = styled.div`
   min-width: 100px;
-  padding: 8px 10px;
   background: #06b6d4;
   border: 1px solid #06b6d4;
   border-radius: 10px;
@@ -33,13 +33,14 @@ export const ShuntNode = ({ data }: ShuntNodeProps) => {
   return (
     <Wrapper>
       <Handle id="target" type="target" position={Position.Top} style={{ background: '#60a5fa', border: 0 }} />
-
       <Handle id="source" type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
-
-      <Title>{data?.name || 'Shunt'}</Title>
-      <Subtitle>
-        P={data?.p_mw ?? 0} MW, Q={data?.q_mvar ?? 0} MVAr
-      </Subtitle>
+      <Head>Shunt</Head>
+      <NodeContent>
+        <Title>{data?.name || 'Shunt'}</Title>
+        <Subtitle>
+          P={data?.p_mw ?? 0} MW, Q={data?.q_mvar ?? 0} MVAr
+        </Subtitle>
+      </NodeContent>
     </Wrapper>
   );
 };

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Layout } from 'antd';
 import styled from 'styled-components';
 import { LeftPalette } from './LeftPalette';
@@ -7,6 +6,7 @@ import { GridCanvas } from '../canvas/GridCanvas';
 import { RightInspector } from './RightInspector';
 import { useCallback, useState } from 'react';
 import type { Edge, Node } from 'reactflow';
+import type { SimulateResponse } from '../api/simulate';
 
 const { Header, Sider, Content, 
 } = Layout;
@@ -28,6 +28,7 @@ type EditorLayoutProps = {
   resetKey?: number;
   resultsPanel?: React.ReactNode;
   isSimulating?: boolean;
+  response?: SimulateResponse | null;
   onNew?: () => void;
   onSave?: () => void;
   onExport?: () => void;
@@ -81,6 +82,8 @@ export const EditorLayout = (props: EditorLayoutProps) => {
               : undefined
           }
           isSimulating={props.isSimulating}
+          nodes={nodes}
+          edges={edges}
         />
       </Header>
       <Layout style={{ background: '#024A70' }}>
@@ -90,12 +93,12 @@ export const EditorLayout = (props: EditorLayoutProps) => {
         <Content style={{ background: '#024A70'}}>
           <PanelWrapper>
             <GridCanvas 
-                nodes={nodes}
-                edges={edges}
-                onUpdateNodes={updateNodes}
-                onUpdateEdges={updateEdges}
-                onSelect={updateSelection}
-              />
+              nodes={nodes}
+              edges={edges}
+              onUpdateNodes={updateNodes}
+              onUpdateEdges={updateEdges}
+              onSelect={updateSelection}
+            />
           </PanelWrapper>
         </Content>
         <Sider width={250} style={{ background: '#024A70', padding: '8px', height: 'calc(100vh - 70px)',  overflow: 'hidden', }}>

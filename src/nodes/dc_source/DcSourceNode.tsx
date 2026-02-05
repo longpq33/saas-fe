@@ -2,10 +2,10 @@ import { Handle, Position } from 'reactflow';
 import styled from 'styled-components';
 
 import type { DcSourceData } from './types';
+import { Head, NodeContent } from '../asymmetric_load/AsymmetricLoadNode';
 
 const Wrapper = styled.div`
   min-width: 100px;
-  padding: 8px 10px;
   background: #8B4513;
   border: 1px solid #ffa500;
   border-radius: 10px;
@@ -33,9 +33,12 @@ export const DcSourceNode = ({ data }: DcSourceNodeProps) => {
   return (
     <Wrapper>
       <Handle id="target" type="target" position={Position.Top} style={{ background: '#60a5fa', border: 0 }} />
-      <Title>{data?.name || 'Source DC'}</Title>
-      <Subtitle>vm={data?.vm_pu ?? 1} pu</Subtitle>
-      <Handle id="source" type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
+      <Head>Source DC</Head>
+      <NodeContent>
+        <Title>{data?.name || 'Source DC'}</Title>
+        <Subtitle>vm={data?.vm_pu ?? 1} pu</Subtitle>
+      </NodeContent>
+     <Handle id="source" type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
     </Wrapper>
   );
 };

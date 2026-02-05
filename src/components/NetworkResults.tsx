@@ -85,7 +85,7 @@ export const NetworkResults = ({ response }: NetworkResultsProps) => {
         </span>
       }
       style={{ marginTop: 8 }}
-      bodyStyle={{ padding: 8 }}
+      styles={{ body: { padding: 8 } }}
     >
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
         <Segmented

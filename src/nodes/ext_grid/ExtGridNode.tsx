@@ -2,10 +2,10 @@ import { Handle, Position } from 'reactflow';
 import styled from 'styled-components';
 
 import type { ExtGridData } from './types';
+import { Head, NodeContent } from '../asymmetric_load/AsymmetricLoadNode';
 
 const Wrapper = styled.div`
   min-width: 100px;
-  padding: 8px 10px;
   background: #BB4D1A;
   border: 1px solid #7c3aed;
   border-radius: 10px;
@@ -33,8 +33,11 @@ export const ExtGridNode = ({ data }: ExtGridNodeProps) => {
   return (
     <Wrapper>
       <Handle id="target" type="target" position={Position.Top} style={{ background: '#60a5fa', border: 0 }} />
-      <Title>{data?.name || 'Ext Grid'}</Title>
-      <Subtitle>vm={data?.vm_pu ?? 1} pu</Subtitle>
+      <Head>Ext Grid</Head>
+      <NodeContent>
+        <Title>{data?.name || 'Ext Grid'}</Title>
+        <Subtitle>vm={data?.vm_pu ?? 1} pu</Subtitle>
+      </NodeContent>
       <Handle id="source" type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
     </Wrapper>
   );

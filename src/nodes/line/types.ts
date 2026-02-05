@@ -1,5 +1,10 @@
 import type { SwitchData } from '../../edges/line/types';
 
+export type LineGeodataPoint = {
+  lat: number;
+  long: number;
+};
+
 export type LineData = {
   name: string;
   fromBusId: string;
@@ -19,5 +24,8 @@ export type LineData = {
   max_i_ka?: number;
 
   switch?: SwitchData;
+
+  // Geographic data for map display
+  geodata?: LineGeodataPoint[];
 };
 

@@ -2,10 +2,10 @@ import { Handle, Position } from 'reactflow';
 import styled from 'styled-components';
 
 import type { Trafo3WData } from './types';
+import { Head, NodeContent } from '../asymmetric_load/AsymmetricLoadNode';
 
 const Wrapper = styled.div`
   min-width: 100px;
-  padding: 8px 10px;
   background: #14b8a6;
   border: 1px solid #6b7280;
   border-radius: 10px;
@@ -35,9 +35,11 @@ export const Trafo3WNode = ({ data }: Trafo3WNodeProps) => {
       <Handle id="hv_t1" type="target" position={Position.Left} style={{ background: '#60a5fa', border: 0 }} />
       <Handle id="mv_t1" type="target" position={Position.Top} style={{ background: '#f59e0b', border: 0 }} />
       <Handle id="lv_s1" type="source" position={Position.Right} style={{ background: '#34d399', border: 0 }} />
-
-      <Title>{data?.name || 'Trafo3W'}</Title>
-      <Subtitle>{data?.std_type || ''}</Subtitle>
+      <Head>Trafo3W</Head>
+      <NodeContent>
+        <Title>{data?.name || 'Trafo3W'}</Title>
+        <Subtitle>{data?.std_type || ''}</Subtitle>
+      </NodeContent>
     </Wrapper>
   );
 };

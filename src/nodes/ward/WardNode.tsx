@@ -2,10 +2,10 @@ import { Handle, Position } from 'reactflow';
 import styled from 'styled-components';
 
 import type { WardData } from './types';
+import { Head, NodeContent } from '../asymmetric_load/AsymmetricLoadNode';
 
 const Wrapper = styled.div`
   min-width: 80px;
-  padding: 8px 10px;
   background: #6B7280;
   border: 1px solid #9ca3af;
   border-radius: 10px;
@@ -37,11 +37,14 @@ export const WardNode = ({ data }: WardNodeProps) => {
   return (
     <Wrapper>
       <Handle type="target" position={Position.Top} style={{ background: '#60a5fa', border: 0 }} />
-      <Title>{data?.name || 'Ward'}</Title>
-      <Subtitle>
-        P={ps} MW, Q={qs} MVAr
-      </Subtitle>
-      <Subtitle>vm={vm.toFixed(2)} pu</Subtitle>
+      <Head>Ward</Head>
+      <NodeContent>
+        <Title>{data?.name || 'Ward'}</Title>
+        <Subtitle>
+          P={ps} MW, Q={qs} MVAr
+        </Subtitle>
+        <Subtitle>vm={vm.toFixed(2)} pu</Subtitle>
+      </NodeContent>
       <Handle type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
     </Wrapper>
   );

@@ -2,7 +2,7 @@ import { Card, Tabs } from 'antd';
 
 export const BottomPanel = () => {
   return (
-    <Card size="small" bordered={false} bodyStyle={{ padding: 8, background: '#0f1115' }} style={{ background: '#0f1115', borderTop: '1px solid #1f2937' }}>
+    <Card size="small" bordered={false} styles={{ body: { padding: 8, background: '#0f1115' } }} style={{ background: '#0f1115', borderTop: '1px solid #1f2937' }}>
       <Tabs
         size="small"
         items={[

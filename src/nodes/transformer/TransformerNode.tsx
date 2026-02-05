@@ -2,10 +2,10 @@ import { Handle, Position } from 'reactflow';
 import styled from 'styled-components';
 
 import type { TransformerData } from './types';
+import { Head, NodeContent } from '../asymmetric_load/AsymmetricLoadNode';
 
 const Wrapper = styled.div`
   min-width: 100px;
-  padding: 8px 10px;
   background: #14b8a6;
   border: 1px solid #6b7280;
   border-radius: 10px;
@@ -33,8 +33,11 @@ export const TransformerNode = ({ data }: TransformerNodeProps) => {
   return (
     <Wrapper>
       <Handle id="hv" type="target" position={Position.Top} style={{ background: '#60a5fa', border: 0 }} />
-      <Title>{data?.name || 'Transformer'}</Title>
-      <Subtitle>{data?.std_type || ''}</Subtitle>
+      <Head>Transformer</Head>
+      <NodeContent>
+        <Title>{data?.name || 'Transformer'}</Title>
+        <Subtitle>{data?.std_type || ''}</Subtitle>
+      </NodeContent>
       <Handle id="lv" type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
     </Wrapper>
   );

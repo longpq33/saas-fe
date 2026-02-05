@@ -5,7 +5,6 @@ import type { AsymmetricLoadData } from './types';
 
 const Wrapper = styled.div`
   min-width: 80px;
-  padding: 8px 10px;
   background: #6B46C1;
   border: 1px solid #a78bfa;
   border-radius: 10px;
@@ -25,6 +24,16 @@ const Subtitle = styled.div`
   color: #9ca3af;
 `;
 
+export const NodeContent = styled.div`
+  padding: 8px 10px;
+`;
+
+export const Head = styled.div`
+  border-bottom: 1px solid #fff;
+  padding: 4px 10px;
+  font-weight: bold;
+`
+
 type AsymmetricLoadNodeProps = {
   data: AsymmetricLoadData;
 };
@@ -38,11 +47,14 @@ export const AsymmetricLoadNode = ({ data }: AsymmetricLoadNodeProps) => {
   return (
     <Wrapper>
       <Handle type="target" position={Position.Top} style={{ background: '#60a5fa', border: 0 }} />
-      <Title>{data?.name || 'Asymmetric Load'}</Title>
-      <Subtitle>
-        A: {p_a}MW B: {p_b}MW C: {p_c}MW
-      </Subtitle>
-      <Subtitle>Total: {total_p.toFixed(2)} MW</Subtitle>
+      <Head>Asymmetric Load</Head>
+      <NodeContent>
+        <Title>{data?.name || 'Asymmetric Load'}</Title>
+        <Subtitle>
+          A: {p_a}MW B: {p_b}MW C: {p_c}MW
+        </Subtitle>
+        <Subtitle>Total: {total_p.toFixed(2)} MW</Subtitle>
+      </NodeContent>
       <Handle type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
     </Wrapper>
   );

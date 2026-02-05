@@ -2,10 +2,10 @@ import { Handle, Position } from 'reactflow';
 import styled from 'styled-components';
 
 import type { ImpedanceData } from './types';
+import { Head, NodeContent } from '../asymmetric_load/AsymmetricLoadNode';
 
 const Wrapper = styled.div`
   min-width: 120px;
-  padding: 8px 10px;
   background: #F59E0B;
   border: 1px solid #fbbf24;
   border-radius: 10px;
@@ -37,14 +37,16 @@ export const ImpedanceNode = ({ data }: ImpedanceNodeProps) => {
     <Wrapper>
       <Handle id="from" type="target" position={Position.Left} style={{ top: '35%', background: '#60a5fa', border: 0 }} />
       <Handle id="to" type="source" position={Position.Right} style={{ top: '35%', background: '#34d399', border: 0 }} />
-
-      <Title>{data?.name || 'Impedance'}</Title>
-      <Subtitle>
-        {data?.fromBusId || 'from?'} → {data?.toBusId || 'to?'}
-      </Subtitle>
-      <Subtitle>
-        R={r.toFixed(4)} pu, X={x.toFixed(4)} pu
-      </Subtitle>
+      <Head>Impedance</Head>
+      <NodeContent>
+        <Title>{data?.name || 'Impedance'}</Title>
+        <Subtitle>
+          {data?.fromBusId || 'from?'} → {data?.toBusId || 'to?'}
+        </Subtitle>
+        <Subtitle>
+          R={r.toFixed(4)} pu, X={x.toFixed(4)} pu
+        </Subtitle>
+      </NodeContent>
     </Wrapper>
   );
 };

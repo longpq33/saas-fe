@@ -14,7 +14,13 @@ export const GenConfigForm = ({ value, onSubmit }: GenConfigFormProps) => {
       size="small"
       initialValues={value}
       onFinish={(values) => {
-        onSubmit(values as GenData);
+        // Clean up geodata: if both lat and long are empty, remove geodata
+        const { geodata, ...rest } = values;
+        let cleanedGeodata = geodata;
+        if (geodata && (geodata.lat === null || geodata.lat === undefined || geodata.long === null || geodata.long === undefined)) {
+          cleanedGeodata = undefined;
+        }
+        onSubmit({ ...rest, geodata: cleanedGeodata } as GenData);
       }}
     >
       <Form.Item label="Name" name="name" rules={[{ required: true, message: 'Name is required' }]}>
@@ -47,6 +53,15 @@ export const GenConfigForm = ({ value, onSubmit }: GenConfigFormProps) => {
 
       <Form.Item label="controllable" name="controllable" valuePropName="checked">
         <Switch />
+      </Form.Item>
+
+      <Form.Item label="Geodata (Optional - leave empty to use bus location with offset)">
+        <Form.Item label="lat" name={['geodata', 'lat']} style={{ marginBottom: 8 }}>
+          <InputNumber style={{ width: '100%' }} step={0.000001} placeholder="Auto from bus" />
+        </Form.Item>
+        <Form.Item label="long" name={['geodata', 'long']} style={{ marginBottom: 0 }}>
+          <InputNumber style={{ width: '100%' }} step={0.000001} placeholder="Auto from bus" />
+        </Form.Item>
       </Form.Item>
 
       <Form.Item>

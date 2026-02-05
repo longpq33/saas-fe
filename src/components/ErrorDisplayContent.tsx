@@ -9,7 +9,7 @@ interface ErrorDisplayContentProps {
 export const ErrorDisplayContent = ({ response }: ErrorDisplayContentProps) => {
   const { errors } = response;
 
-  const hasErrors = errors?.validation?.length > 0 || errors?.powerflow?.length > 0 || errors?.network?.length > 0;
+  const hasErrors = errors && Object.values(errors ?? {}).some(arr => Array.isArray(arr) && arr.length > 0);
 
   return (
     <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>

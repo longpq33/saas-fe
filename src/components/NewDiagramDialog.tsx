@@ -33,7 +33,7 @@ export const NewDiagramDialog: React.FC<NewDiagramDialogProps> = ({ open, onClos
       open={open}
       onCancel={onClose}
       title="Create New Diagram"
-      width={800}
+      width={1000}
       footer={[
         <Button key="help" icon={<QuestionCircleOutlined />}>
           Help
@@ -48,7 +48,7 @@ export const NewDiagramDialog: React.FC<NewDiagramDialogProps> = ({ open, onClos
     >
       <Space direction="vertical" style={{ width: '100%' }}>
         <Layout style={{ background: '#fff', minHeight: 300 }}>
-          <Sider width={200} style={{ background: '#fff' }}>
+          <Sider width={300} style={{ background: '#fff' }}>
             <Menu
               mode="inline"
               selectedKeys={[selectedCategory]}

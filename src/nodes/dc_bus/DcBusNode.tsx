@@ -2,10 +2,10 @@ import { Handle, Position } from 'reactflow';
 import styled from 'styled-components';
 
 import type { DcBusData } from './types';
+import { Head, NodeContent } from '../asymmetric_load/AsymmetricLoadNode';
 
 const Wrapper = styled.div`
   min-width: 80px;
-  padding: 6px 10px;
   background: #1E3A5F;
   border: 1px solid #60a5fa;
   border-radius: 10px;
@@ -33,9 +33,12 @@ export const DcBusNode = ({ data }: DcBusNodeProps) => {
   return (
     <Wrapper>
       <Handle id="target" type="target" position={Position.Top} style={{ background: '#60a5fa', border: 0 }} />
-      <Title>{data?.name || 'Bus DC'}</Title>
-      <Subtitle>{data?.vn_kv ?? ''} kV DC</Subtitle>
-      <Handle id="source" type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
+      <Head>Bus DC</Head>
+      <NodeContent>
+        <Title>{data?.name || 'Bus DC'}</Title>
+        <Subtitle>{data?.vn_kv ?? ''} kV DC</Subtitle>
+      </NodeContent>
+     <Handle id="source" type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
     </Wrapper>
   );
 };

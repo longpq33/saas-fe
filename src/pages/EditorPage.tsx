@@ -84,6 +84,7 @@ export const EditorPage = () => {
         initialNodes={initialDiagram.nodes}
         initialEdges={initialDiagram.edges}
         isSimulating={simulateMutation.isPending}
+        response={lastResponse}
         onNew={handleNew}
         onSave={handleStub('Save')}
         onExport={handleStub('Export')}

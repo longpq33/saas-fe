@@ -2,10 +2,10 @@ import { Handle, Position } from 'reactflow';
 import styled from 'styled-components';
 
 import type { XWardData } from './types';
+import { Head, NodeContent } from '../asymmetric_load/AsymmetricLoadNode';
 
 const Wrapper = styled.div`
   min-width: 80px;
-  padding: 8px 10px;
   background: #4B5563;
   border: 1px solid #6b7280;
   border-radius: 10px;
@@ -37,11 +37,14 @@ export const XWardNode = ({ data }: XWardNodeProps) => {
   return (
     <Wrapper>
       <Handle type="target" position={Position.Top} style={{ background: '#60a5fa', border: 0 }} />
-      <Title>{data?.name || 'Extended Ward'}</Title>
-      <Subtitle>
-        P={ps} MW, Q={qs} MVAr
-      </Subtitle>
-      <Subtitle>vm={vm.toFixed(2)} pu</Subtitle>
+      <Head>Extended Ward</Head>
+      <NodeContent>
+        <Title>{data?.name || 'Extended Ward'}</Title>
+        <Subtitle>
+          P={ps} MW, Q={qs} MVAr
+        </Subtitle>
+        <Subtitle>vm={vm.toFixed(2)} pu</Subtitle>
+      </NodeContent>
       <Handle type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
     </Wrapper>
   );

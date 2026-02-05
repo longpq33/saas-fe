@@ -129,7 +129,7 @@ export const NetworkCharts = ({ response, topN = 30 }: NetworkChartsProps) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {!converged && (
-        <Card size="small" bodyStyle={{ padding: 8 }}>
+        <Card size="small" styles={{ body: { padding: 8 } }}>
           Not converged — values may be incomplete.
         </Card>
       )}
@@ -145,7 +145,7 @@ export const NetworkCharts = ({ response, topN = 30 }: NetworkChartsProps) => {
         <Card
           size="small"
           title="Voltage profile (vm_pu)"
-          bodyStyle={{ padding: 8 }}
+          styles={{ body: { padding: 8 } }}
           extra={<span style={{ color: '#666' }}>out-of-range: {vmOutCount}</span>}
         >
           <div style={{ color: '#666', marginBottom: 8 }}>
@@ -191,7 +191,7 @@ export const NetworkCharts = ({ response, topN = 30 }: NetworkChartsProps) => {
         <Card
           size="small"
           title={`Line loading (%) (Top ${topN})`}
-          bodyStyle={{ padding: 8 }}
+          styles={{ body: { padding: 8 } }}
           extra={<span style={{ color: '#666' }}>{`>80%: ${lineOver80} | >100%: ${lineOver100}`}</span>}
         >
           <div style={{ color: '#666', marginBottom: 8 }}>max={lineMax ?? ''}</div>
@@ -233,7 +233,7 @@ export const NetworkCharts = ({ response, topN = 30 }: NetworkChartsProps) => {
         <Card
           size="small"
           title={`Trafo loading (%) (Top ${topN})`}
-          bodyStyle={{ padding: 8 }}
+          styles={{ body: { padding: 8 } }}
           extra={<span style={{ color: '#666' }}>{`>80%: ${trafoOver80} | >100%: ${trafoOver100}`}</span>}
         >
           <div style={{ color: '#666', marginBottom: 8 }}>max={trafoMax ?? ''}</div>
@@ -272,7 +272,7 @@ export const NetworkCharts = ({ response, topN = 30 }: NetworkChartsProps) => {
           )}
         </Card>
 
-        <Card size="small" title="Generation vs Load (MW)" bodyStyle={{ padding: 8 }}>
+        <Card size="small" title="Generation vs Load (MW)" styles={{ body: { padding: 8 } }}>
           <div style={{ color: '#666', marginBottom: 8 }}>
             total_load_mw={totalLoadMw} total_gen_mw={totalGenMw}
           </div>

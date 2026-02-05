@@ -24,11 +24,28 @@ export const LineConfigForm = ({ value, onSubmit }: LineConfigFormProps) => {
       size="small"
       initialValues={initialValues}
       onFinish={(values) => {
-        const { use_custom_params, ...rest } = values;
+        const { use_custom_params, geodata, ...rest } = values;
+
+        // Parse geodata if it's a string
+        let parsedGeodata: LineData['geodata'] = undefined;
+        if (geodata) {
+          if (typeof geodata === 'string') {
+            try {
+              const parsed = JSON.parse(geodata);
+              parsedGeodata = Array.isArray(parsed) ? parsed : undefined;
+            } catch {
+              // Invalid JSON, ignore
+              parsedGeodata = undefined;
+            }
+          } else if (Array.isArray(geodata)) {
+            parsedGeodata = geodata;
+          }
+        }
 
         const next: LineData = {
           ...rest,
           std_type: use_custom_params ? '' : (rest.std_type ?? ''),
+          geodata: parsedGeodata,
         };
 
         onSubmit(next);
@@ -134,6 +151,42 @@ export const LineConfigForm = ({ value, onSubmit }: LineConfigFormProps) => {
 
               <Form.Item label="in_service" name="in_service" valuePropName="checked">
                 <Switch />
+              </Form.Item>
+
+              <Form.Item
+                label="Geodata (Optional)"
+                name="geodata"
+                getValueFromEvent={(e) => {
+                  const value = e.target.value;
+                  if (!value || value.trim() === '') return undefined;
+                  try {
+                    return JSON.parse(value);
+                  } catch {
+                    return value; // Return as string for validation
+                  }
+                }}
+                normalize={(value) => {
+                  if (!value) return undefined;
+                  if (typeof value === 'string') {
+                    try {
+                      return JSON.parse(value);
+                    } catch {
+                      return value;
+                    }
+                  }
+                  return value;
+                }}
+                getValueProps={(value) => {
+                  if (!value) return { value: '' };
+                  if (typeof value === 'string') return { value };
+                  return { value: JSON.stringify(value, null, 2) };
+                }}
+              >
+                <Input.TextArea
+                  rows={3}
+                  placeholder='JSON array format: [{"lat": 10.0, "long": 106.0}, {"lat": 10.1, "long": 106.1}]'
+                  style={{ fontFamily: 'monospace', fontSize: '12px' }}
+                />
               </Form.Item>
             </>
           );

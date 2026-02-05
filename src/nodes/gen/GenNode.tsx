@@ -2,10 +2,10 @@ import { Handle, Position } from 'reactflow';
 import styled from 'styled-components';
 
 import type { GenData } from './types';
+import { Head, NodeContent } from '../asymmetric_load/AsymmetricLoadNode';
 
 const Wrapper = styled.div`
   min-width: 100px;
-  padding: 8px 10px;
   background: #BB4D1A;
   border: 1px solid #10b981;
   border-radius: 10px;
@@ -33,14 +33,13 @@ export const GenNode = ({ data }: GenNodeProps) => {
   return (
     <Wrapper>
       <Handle id="target" type="target" position={Position.Top} style={{ background: '#60a5fa', border: 0 }} />
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div>
-          <Title>{data?.name || 'Gen'}</Title>
-          <Subtitle>
-            P={data?.p_mw ?? 0} MW, vm={data?.vm_pu ?? 1} pu
-          </Subtitle>
-        </div>
-      </div>
+      <Head>Gen</Head>
+      <NodeContent>
+        <Title>{data?.name || 'Gen'}</Title>
+        <Subtitle>
+          P={data?.p_mw ?? 0} MW, vm={data?.vm_pu ?? 1} pu
+        </Subtitle>
+      </NodeContent>
       <Handle id="source" type="source" position={Position.Bottom} style={{ background: '#34d399', border: 0 }} />
     </Wrapper>
   );

@@ -39,7 +39,7 @@ export const LeftPalette = () => {
   const groups = getPaletteGroups();
 
   return (
-    <Card title="Elements" size="small" bordered={false} bodyStyle={{ padding: 8, background: '#fff', height: '100%', overflow: 'auto' }} style={{ background: '#fff', height: '100%', paddingBottom: 30 }}>
+    <Card title="Elements" size="small" bordered={false} styles={{ body: { padding: 8, background: '#fff', height: '100%', overflow: 'auto' } }} style={{ background: '#fff', height: '100%', paddingBottom: 30 }}>
       {groups.map((group) => (
         <GroupContainer key={group.key}>
           <GroupTitle>{group.label}</GroupTitle>

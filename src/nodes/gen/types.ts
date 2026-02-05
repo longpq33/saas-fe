@@ -1,3 +1,8 @@
+export type GenGeodata = {
+  lat: number;
+  long: number;
+};
+
 export type GenData = {
   name: string;
   busId: string;
@@ -7,6 +12,7 @@ export type GenData = {
   max_q_mvar?: number;
   controllable: boolean;
   in_service: boolean;
+  geodata?: GenGeodata;
 };
 
 
