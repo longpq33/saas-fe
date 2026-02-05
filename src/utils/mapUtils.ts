@@ -22,6 +22,17 @@ export type LineWithGeodata = {
   geodata?: LineGeodataPoint[];
   fromBus?: BusWithGeodata;
   toBus?: BusWithGeodata;
+
+  // Design / configuration data (optional, for tooltips)
+  length_km?: number;
+  std_type?: string;
+  parallel?: number;
+  df?: number;
+  in_service?: boolean;
+  r_ohm_per_km?: number;
+  x_ohm_per_km?: number;
+  c_nf_per_km?: number;
+  max_i_ka?: number;
 };
 
 export type NodeWithGeodata = {
@@ -148,6 +159,15 @@ export function getLinesWithGeodata(nodes: Node[], edges: Edge[]): LineWithGeoda
       geodata: lineData.geodata,
       fromBus,
       toBus,
+      length_km: lineData.length_km,
+      std_type: lineData.std_type,
+      parallel: lineData.parallel,
+      df: lineData.df,
+      in_service: lineData.in_service,
+      r_ohm_per_km: lineData.r_ohm_per_km,
+      x_ohm_per_km: lineData.x_ohm_per_km,
+      c_nf_per_km: lineData.c_nf_per_km,
+      max_i_ka: lineData.max_i_ka,
     });
   }
 
@@ -259,12 +279,28 @@ function isValidBusId(busId: string | undefined): busId is string {
 }
 
 /**
+ * Offsets (in degrees) to place bus-bound equipment around a bus
+ * to avoid overlapping markers on the map.
+ */
+const BUS_BOUND_OFFSETS: Array<{ lat: number; long: number }> = [
+  { lat: 0.01, long: 0.0 },
+  { lat: -0.01, long: 0.0 },
+  { lat: 0.0, long: 0.01 },
+  { lat: 0.0, long: -0.01 },
+  { lat: 0.01, long: 0.01 },
+  { lat: -0.01, long: -0.01 },
+  { lat: 0.01, long: -0.01 },
+  { lat: -0.01, long: 0.01 },
+];
+
+/**
  * Get nodes with geodata from their connected buses
  * Returns array of nodes that have valid geodata through bus connections
  */
 export function getNodesWithGeodata(nodes: Node[], buses: BusWithGeodata[]): NodeWithGeodata[] {
   const busMap = new Map(buses.map((b) => [b.id, b]));
   const nodesWithGeodata: NodeWithGeodata[] = [];
+  const busOffsetIndex = new Map<string, number>();
 
   for (const node of nodes) {
     // Only process node types that should be displayed
@@ -315,14 +351,19 @@ export function getNodesWithGeodata(nodes: Node[], buses: BusWithGeodata[]): Nod
       // Still try to get busId for connection display, but it's optional
       validBusId = isValidBusId(foundBusId) ? foundBusId : undefined;
     } else {
-      // Node doesn't have own geodata - need bus with geodata
+      // Node doesn't have its own geodata - need bus with geodata
       if (!bus || !isValidBusId(foundBusId)) {
         continue;
       }
-      // Use bus geodata with small offset to make connection visible
-      // Offset: +0.01 degrees (approximately 1.1km)
-      nodeLat = bus.lat + 0.01;
-      nodeLong = bus.long + 0.01;
+
+      // Use bus geodata with small offset to make multiple bus-bound nodes visible
+      // around the same bus (avoid overlapping markers).
+      const currentIndex = busOffsetIndex.get(bus.id) ?? 0;
+      busOffsetIndex.set(bus.id, currentIndex + 1);
+      const pattern = BUS_BOUND_OFFSETS[currentIndex % BUS_BOUND_OFFSETS.length];
+
+      nodeLat = bus.lat + pattern.lat;
+      nodeLong = bus.long + pattern.long;
       validBusId = foundBusId;
     }
     

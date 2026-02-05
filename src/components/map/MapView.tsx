@@ -45,10 +45,20 @@ function asString(v: unknown): string | undefined {
   return s.length ? s : undefined;
 }
 
-function buildOverloadedLineNameSet(response: SimulateResponse | undefined, thresholdPercent = 100): Set<string> {
-  const overloaded = new Set<string>();
+type LineResultSummary = {
+  loadingPercent?: number;
+  pFromMw?: number;
+  qFromMvar?: number;
+  pToMw?: number;
+  qToMvar?: number;
+  iFromKa?: number;
+  iToKa?: number;
+};
+
+function buildLineResultsByName(response: SimulateResponse | undefined): Map<string, LineResultSummary> {
+  const resultsByName = new Map<string, LineResultSummary>();
   const network = response?.network;
-  if (!network) return overloaded;
+  if (!network) return resultsByName;
 
   const lineTable = ((network.tables?.line ?? []) as Row[]) || [];
   const resLine = ((network.results?.res_line ?? []) as Row[]) || [];
@@ -63,8 +73,13 @@ function buildOverloadedLineNameSet(response: SimulateResponse | undefined, thre
   }
 
   for (const r of resLine) {
-    const loading = asNumber((r as any)?.loading_percent);
-    if (loading === undefined || loading < thresholdPercent) continue;
+    const loadingPercent = asNumber((r as any)?.loading_percent);
+    const pFromMw = asNumber((r as any)?.p_from_mw);
+    const qFromMvar = asNumber((r as any)?.q_from_mvar);
+    const pToMw = asNumber((r as any)?.p_to_mw);
+    const qToMvar = asNumber((r as any)?.q_to_mvar);
+    const iFromKa = asNumber((r as any)?.i_from_ka);
+    const iToKa = asNumber((r as any)?.i_to_ka);
 
     const idx = asString((r as any)?.index ?? (r as any)?.id);
     let name = asString((r as any)?.name);
@@ -72,47 +87,20 @@ function buildOverloadedLineNameSet(response: SimulateResponse | undefined, thre
       const fromTable = nameByIndex.get(idx);
       if (fromTable) name = fromTable;
     }
-    if (name) {
-      overloaded.add(name);
-    }
+    if (!name) continue;
+
+    resultsByName.set(name, {
+      loadingPercent,
+      pFromMw,
+      qFromMvar,
+      pToMw,
+      qToMvar,
+      iFromKa,
+      iToKa,
+    });
   }
 
-  return overloaded;
-}
-
-function buildLineLoadingByName(response: SimulateResponse | undefined): Map<string, number> {
-  const loadingByName = new Map<string, number>();
-  const network = response?.network;
-  if (!network) return loadingByName;
-
-  const lineTable = ((network.tables?.line ?? []) as Row[]) || [];
-  const resLine = ((network.results?.res_line ?? []) as Row[]) || [];
-
-  const nameByIndex = new Map<string, string>();
-  for (const r of lineTable) {
-    const idx = asString((r as any)?.index ?? (r as any)?.id);
-    const name = asString((r as any)?.name);
-    if (idx && name) {
-      nameByIndex.set(idx, name);
-    }
-  }
-
-  for (const r of resLine) {
-    const loading = asNumber((r as any)?.loading_percent);
-    if (loading === undefined) continue;
-
-    const idx = asString((r as any)?.index ?? (r as any)?.id);
-    let name = asString((r as any)?.name);
-    if (!name && idx) {
-      const fromTable = nameByIndex.get(idx);
-      if (fromTable) name = fromTable;
-    }
-    if (name) {
-      loadingByName.set(name, loading);
-    }
-  }
-
-  return loadingByName;
+  return resultsByName;
 }
 
 export const MAP_CONFIG = {
@@ -278,17 +266,21 @@ export const MapView = ({ nodes, edges, response }: ViewMapControlProps) => {
   const lines = useMemo(() => getLinesWithGeodata(nodes, edges), [nodes, edges]);
   const nodesWithGeodata = useMemo(() => getNodesWithGeodata(nodes, buses), [nodes, buses]);
   const nodeToBusConnections = useMemo(() => getNodeToBusConnections(buses, nodesWithGeodata), [buses, nodesWithGeodata]);
+  const lineResultsByName = useMemo(
+    () => buildLineResultsByName(response ?? undefined),
+    [response]
+  );
 
   // Overloaded lines (by name) based on simulation results
-  const overloadedLineNames = useMemo(
-    () => buildOverloadedLineNameSet(response ?? undefined, 100),
-    [response]
-  );
-
-  const lineLoadingByName = useMemo(
-    () => buildLineLoadingByName(response ?? undefined),
-    [response]
-  );
+  const overloadedLineNames = useMemo(() => {
+    const set = new Set<string>();
+    lineResultsByName.forEach((r, name) => {
+      if (r.loadingPercent !== undefined && r.loadingPercent >= 100) {
+        set.add(name);
+      }
+    });
+    return set;
+  }, [lineResultsByName]);
 
   // Calculate bounds: use buses if available, otherwise use Vietnam bounds
   const bounds = useMemo(() => {
@@ -356,12 +348,8 @@ export const MapView = ({ nodes, edges, response }: ViewMapControlProps) => {
       }
       // Transformer connections
       if (['transformer', 'trafo3w'].includes(nodeType)) {
-        const colors: Record<string, string> = {
-          transformer: '#6b7280',
-          trafo3w: '#374151',
-        };
         return {
-          color: colors[nodeType] || '#6b7280',
+          color: getNodeColor(nodeType),
           weight: 2,
           opacity: 0.7,
           dashArray: undefined, // solid line
@@ -632,8 +620,9 @@ export const MapView = ({ nodes, edges, response }: ViewMapControlProps) => {
             return null;
           }
 
+          const result = lineResultsByName.get(line.name);
           const isOverloaded = overloadedLineNames.has(line.name);
-          const loadingPercent = lineLoadingByName.get(line.name);
+          const loadingPercent = result?.loadingPercent;
           const pathOptions = isOverloaded
             ? {
                 ...polylineOptions,
@@ -656,6 +645,21 @@ export const MapView = ({ nodes, edges, response }: ViewMapControlProps) => {
                       </span>
                     </>
                   )}
+                  {line.length_km !== undefined && (
+                    <>
+                      <br />
+                      <span>
+                        Thiết kế: {line.length_km} km
+                        {line.std_type ? `, ${line.std_type}` : ''}
+                      </span>
+                    </>
+                  )}
+                  {line.max_i_ka !== undefined && (
+                    <>
+                      <br />
+                      <span>Imax: {line.max_i_ka} kA</span>
+                    </>
+                  )}
                   {loadingPercent !== undefined && (
                     <>
                       <br />
@@ -666,6 +670,38 @@ export const MapView = ({ nodes, edges, response }: ViewMapControlProps) => {
                     <>
                       <br />
                       <span>Loading: N/A</span>
+                    </>
+                  )}
+                  {result?.pFromMw !== undefined && (
+                    <>
+                      <br />
+                      <span>
+                        P_from: {result.pFromMw.toFixed(2)} MW
+                      </span>
+                    </>
+                  )}
+                  {result?.pToMw !== undefined && (
+                    <>
+                      <br />
+                      <span>
+                        P_to: {result.pToMw.toFixed(2)} MW
+                      </span>
+                    </>
+                  )}
+                  {result?.iFromKa !== undefined && (
+                    <>
+                      <br />
+                      <span>
+                        I_from: {result.iFromKa.toFixed(3)} kA
+                      </span>
+                    </>
+                  )}
+                  {result?.iToKa !== undefined && (
+                    <>
+                      <br />
+                      <span>
+                        I_to: {result.iToKa.toFixed(3)} kA
+                      </span>
                     </>
                   )}
                   {isOverloaded && (

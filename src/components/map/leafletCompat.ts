@@ -30,19 +30,23 @@ export function getBusIcon(busType: BusIconType) {
   const cached = iconCache.get(busType);
   if (cached) return cached;
 
-  const iconUrl =
-    busType === 'dc_bus'
-      ? 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png'
-      : 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png';
+  // Dùng cùng style hình tròn với node icons, màu lấy từ NODE_ICON_COLORS / getNodeColor
+  const color = getNodeColor(busType);
 
-  const IconCtor = (L as unknown as { Icon: new (opts: unknown) => unknown }).Icon;
-  const icon = new IconCtor({
-    iconUrl,
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
+  const DivIconCtor = (L as unknown as { DivIcon: new (opts: unknown) => unknown }).DivIcon;
+  const icon = new DivIconCtor({
+    className: 'custom-bus-icon',
+    html: `<div style="
+      width: 20px;
+      height: 20px;
+      background-color: ${color};
+      border: 2px solid white;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    "></div>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -10],
   });
 
   iconCache.set(busType, icon);
@@ -73,22 +77,22 @@ export type MapNodeType =
 const NODE_ICON_COLORS: Record<MapNodeType, string> = {
   bus: '#034F3B',
   dc_bus: '#1E3A5F',
-  gen: '#22c55e',
-  ext_grid: '#eab308',
-  load: '#f97316',
-  sgen: '#60a5fa',
-  storage: '#a855f7',
-  transformer: '#6b7280',
-  trafo3w: '#374151',
-  motor: '#f87171',
-  shunt: '#92400e',
-  dc_source: '#ef4444',
-  dc_load: '#fb7185',
-  asymmetric_load: '#fb923c',
-  asymmetric_sgen: '#4ade80',
-  ward: '#ec4899',
-  xward: '#be185d',
-  switch: '#fbbf24',
+  gen: '#BB4D1A',
+  ext_grid: '#BB4D1A',
+  load: '#024A70',
+  sgen: '#BB4D1A',
+  storage: '#861043',
+  transformer: '#14b8a6',
+  trafo3w: '#14b8a6',
+  motor: '#312C85',
+  shunt: '#06b6d4',
+  dc_source: '#8B4513',
+  dc_load: '#1E4A6B',
+  asymmetric_load: '#6B46C1',
+  asymmetric_sgen: '#10B981',
+  ward: '#6B7280',
+  xward: '#4B5563',
+  switch: '#024A70',
 } as const;
 
 export function getNodeColor(nodeType: string): string {
